@@ -1,0 +1,142 @@
+{% extends "membres/base.html" %}
+
+{% block title %}Terminer le Mandat Actuel{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Confirmer la fin du mandat actuel
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle me-2"></i>Processus automatique</h5>
+                        <p class="mb-0">Cette action va automatiquement :</p>
+                        <ol class="mt-2 mb-0">
+                            <li><strong>Archiver</strong> le mandat actuel "{{ mandat_actuel.nom }}"</li>
+                            <li><strong>Archiver</strong> tous les membres du bureau actuel</li>
+                            <li><strong>Archiver</strong> tous les membres du comité des doyens</li>
+                            <li><strong>Créer</strong> un nouveau mandat pour l'année suivante</li>
+                            <li><strong>Vous rediriger</strong> vers la page FIZATO pour constituer le nouveau bureau</li>
+                        </ol>
+                    </div>
+
+                    <div class="row">
+                        <!-- Mandat actuel -->
+                        <div class="col-md-6 mb-4">
+                            <h5><i class="fas fa-calendar me-2 text-primary"></i>Mandat actuel</h5>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="fw-bold">{{ mandat_actuel.nom }}</h6>
+                                    <p class="text-muted mb-1">
+                                        <i class="fas fa-calendar-start me-1"></i>
+                                        Début : {{ mandat_actuel.date_debut|date:"d F Y" }}
+                                    </p>
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-calendar-times me-1"></i>
+                                        Fin : <strong>Aujourd'hui ({{ "now"|date:"d F Y" }})</strong>
+                                    </p>
+                                    {% if mandat_actuel.description %}
+                                    <p class="text-muted small mt-2 mb-0">{{ mandat_actuel.description }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bureau actuel -->
+                        <div class="col-md-6 mb-4">
+                            <h5><i class="fas fa-users me-2 text-warning"></i>Bureau actuel ({{ membres_bureau.count }} membres)</h5>
+                            {% if membres_bureau %}
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    {% for membre_bureau in membres_bureau %}
+                                    <div class="d-flex align-items-center mb-2">
+                                        {% if membre_bureau.membre.photo %}
+                                            <img src="{{ membre_bureau.membre.photo.url }}" alt="Photo {{ membre_bureau.membre.prenom }}" 
+                                                 class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" 
+                                                 style="width: 30px; height: 30px;">
+                                                <i class="fas fa-user text-white small"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <small class="fw-bold">{{ membre_bureau.membre.prenom }} {{ membre_bureau.membre.nom }}</small><br>
+                                            <small class="text-primary">{{ membre_bureau.fonction.nom }}</small><br>
+                                            <small class="text-muted">{{ membre_bureau.membre.association.nom }}</small>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-light">
+                                <i class="fas fa-info-circle me-2"></i>Aucun membre dans le bureau actuel
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Comité des doyens -->
+                    {% if comite_doyen %}
+                    <div class="mb-4">
+                        <h5><i class="fas fa-user-graduate me-2 text-info"></i>Comité des doyens ({{ comite_doyen.count }} membres)</h5>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="row">
+                                    {% for doyen in comite_doyen %}
+                                    <div class="col-md-6 mb-2">
+                                        <div class="d-flex align-items-center">
+                                            {% if doyen.membre.photo %}
+                                                <img src="{{ doyen.membre.photo.url }}" alt="Photo {{ doyen.membre.prenom }}" 
+                                                     class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="rounded-circle bg-info d-flex align-items-center justify-content-center me-2" 
+                                                     style="width: 30px; height: 30px;">
+                                                    <i class="fas fa-user text-white small"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <small class="fw-bold">{{ doyen.membre.prenom }} {{ doyen.membre.nom }}</small><br>
+                                                <small class="text-info">{{ doyen.titre }}</small><br>
+                                                <small class="text-muted">{{ doyen.membre.association.nom }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Attention</h6>
+                        <p class="mb-0">
+                            Cette action est <strong>irréversible</strong>. 
+                            Tous les membres actuels seront archivés et vous devrez reconstituer un nouveau bureau.
+                        </p>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'detail_fizato' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Annuler
+                        </a>
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-archive me-2"></i>Confirmer la fin du mandat
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

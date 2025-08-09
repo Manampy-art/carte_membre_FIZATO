@@ -1,0 +1,48 @@
+{% extends 'membres/base.html' %}
+
+{% block title %}Confirmer la suppression{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <strong>Attention !</strong> Cette action est irréversible et supprimera également tous les membres de cette association.
+                    </div>
+                    
+                    <p>Êtes-vous sûr de vouloir supprimer l'association suivante ?</p>
+                    
+                    <div class="border p-3 mb-4 bg-light rounded">
+                        <strong>{{ association.nom }}</strong><br>
+                        <small class="text-muted">Date de création: {{ association.date_creation }}</small><br>
+                        {% if association.devise %}
+                        <small class="text-muted">Devise: {{ association.devise }}</small><br>
+                        {% endif %}
+                        <small class="text-danger">
+                            <i class="fas fa-users me-1"></i>
+                            {{ association.membre_set.count }} membre(s) sera(ont) également supprimé(s)
+                        </small>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i>Oui, supprimer
+                            </button>
+                            <a href="{% url 'liste_associations' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

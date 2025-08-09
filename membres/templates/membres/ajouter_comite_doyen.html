@@ -1,0 +1,82 @@
+{% extends "membres/base.html" %}
+
+{% block title %}Ajouter au comité des doyens - FIZATO{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>Ajouter au comité des doyens
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.membre.id_for_label }}" class="form-label">
+                            <i class="fas fa-user me-2"></i>Membre *
+                        </label>
+                        {{ form.membre }}
+                        {% if form.membre.errors %}
+                            <div class="text-danger small">{{ form.membre.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.titre.id_for_label }}" class="form-label">
+                            <i class="fas fa-tag me-2"></i>Titre
+                        </label>
+                        {{ form.titre }}
+                        {% if form.titre.errors %}
+                            <div class="text-danger small">{{ form.titre.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.date_nomination.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calendar-alt me-2"></i>Date de nomination *
+                                </label>
+                                {{ form.date_nomination }}
+                                {% if form.date_nomination.errors %}
+                                    <div class="text-danger small">{{ form.date_nomination.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.ordre_affichage.id_for_label }}" class="form-label">
+                                    <i class="fas fa-sort-numeric-up me-2"></i>Ordre d'affichage
+                                </label>
+                                {{ form.ordre_affichage }}
+                                {% if form.ordre_affichage.errors %}
+                                    <div class="text-danger small">{{ form.ordre_affichage.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Info :</strong> Le membre sera ajouté au comité des doyens et affiché 
+                        dans la section dédiée de l'organigramme.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'detail_fizato' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Ajouter au comité
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

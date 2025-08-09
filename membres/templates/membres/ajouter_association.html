@@ -1,0 +1,140 @@
+{% extends 'membres/base.html' %}
+
+{% block title %}
+{% if is_edit %}Modifier Association{% else %}Ajouter une Association{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas {% if is_edit %}fa-edit{% else %}fa-plus{% endif %} me-2"></i>
+        {% if is_edit %}Modifier Association{% else %}Ajouter une Association{% endif %}
+    </h2>
+    <a href="{% url 'liste_associations' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <h6><i class="fas fa-exclamation-triangle me-2"></i>Erreurs dans le formulaire :</h6>
+                <ul class="mb-0">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ field|title }} : {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Informations de base -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informations de base</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nom de l'Association *</label>
+                                {{ form.nom }}
+                                {% if form.nom.help_text %}
+                                    <div class="form-text">{{ form.nom.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Date de création</label>
+                                {{ form.date_creation }}
+                                {% if form.date_creation.help_text %}
+                                    <div class="form-text">{{ form.date_creation.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Devise</label>
+                        {{ form.devise }}
+                        <div class="form-text">La devise ou le slogan de votre association</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Fondateurs</label>
+                        {{ form.fondateurs }}
+                        <div class="form-text">Listez les fondateurs de l'association (un par ligne ou séparés par des virgules)</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        {{ form.description }}
+                        <div class="form-text">Décrivez les objectifs et activités de l'association</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logos -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-image me-2"></i>Logos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Logo de l'Association</label>
+                                {{ form.logo_association }}
+                                <div class="form-text">Format recommandé : PNG ou JPEG, 300x300px minimum</div>
+                                {% if is_edit and association.logo_association %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">Image actuelle :</small><br>
+                                        <img src="{{ association.logo_association.url }}" alt="Logo actuel" style="max-width: 100px; max-height: 100px;" class="border rounded">
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Logo de l'Université</label>
+                                {{ form.logo_universite }}
+                                <div class="form-text">Logo officiel de l'université ou établissement</div>
+                                {% if is_edit and association.logo_universite %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">Image actuelle :</small><br>
+                                        <img src="{{ association.logo_universite.url }}" alt="Logo université actuel" style="max-width: 100px; max-height: 100px;" class="border rounded">
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas {% if is_edit %}fa-save{% else %}fa-plus{% endif %} me-2"></i>
+                    {% if is_edit %}Enregistrer les modifications{% else %}Créer l'Association{% endif %}
+                </button>
+                <a href="{% url 'liste_associations' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+</style>
+{% endblock %}

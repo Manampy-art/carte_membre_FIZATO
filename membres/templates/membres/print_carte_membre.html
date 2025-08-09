@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte de Membre - {{ membre.prenom }} {{ membre.nom }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        @media print {
+            body { 
+                margin: 0; 
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print { display: none !important; }
+            .page-break { page-break-after: always; }
+            
+            /* Forcer l'affichage des couleurs et effets lors de l'impression */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            .carte-container {
+                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0d1421 100%) !important;
+                box-shadow: 
+                    0 0 0 1px rgba(255,255,255,0.15),
+                    0 10px 25px rgba(0,0,0,0.4),
+                    0 5px 15px rgba(0,0,0,0.3),
+                    inset 0 1px 0 rgba(255,255,255,0.1),
+                    inset 0 -1px 0 rgba(0,0,0,0.2) !important;
+            }
+            
+            .accent-line {
+                background: linear-gradient(90deg, 
+                    #ff6b6b 0%, 
+                    #4ecdc4 25%, 
+                    #45b7d1 50%, 
+                    #96ceb4 75%, 
+                    #ffeaa7 100%) !important;
+            }
+            
+            .left-section {
+                background: linear-gradient(135deg, 
+                    rgba(255,255,255,0.08) 0%, 
+                    rgba(255,255,255,0.03) 100%) !important;
+            }
+            
+            .devise-section {
+                background: linear-gradient(135deg, 
+                    rgba(78, 205, 196, 0.4) 0%, 
+                    rgba(52, 152, 219, 0.4) 50%, 
+                    rgba(155, 89, 182, 0.4) 100%) !important;
+                border: 1px solid rgba(78, 205, 196, 0.8) !important;
+                color: #ffffff !important;
+                font-size: 3.5px !important;
+                min-height: 8px !important;
+                height: 8px !important;
+                padding: 2px 3px !important;
+                margin: 1px auto 2px auto !important;
+                width: calc(100% - 8px) !important;
+            }
+            
+            .status-badge {
+                background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%) !important;
+                color: #ffffff !important;
+            }
+            
+            .validity {
+                background: rgba(78, 205, 196, 0.1) !important;
+                border: 1px solid rgba(78, 205, 196, 0.2) !important;
+                color: #4ecdc4 !important;
+            }
+            
+            .signature-item {
+                background: linear-gradient(135deg, 
+                    rgba(255,255,255,0.05) 0%, 
+                    rgba(255,255,255,0.02) 100%) !important;
+                border: 1px solid rgba(255,255,255,0.1) !important;
+            }
+            
+            .signature-box {
+                background: linear-gradient(135deg, 
+                    rgba(255,255,255,0.95) 0%, 
+                    rgba(248,250,252,0.95) 100%) !important;
+                border: 1px solid rgba(255,255,255,0.3) !important;
+            }
+            
+            .logo-universite {
+                background: rgba(255,255,255,0.1) !important;
+                border: 1px solid rgba(255,255,255,0.2) !important;
+            }
+            
+            .logo-fizato {
+                background: rgba(78, 205, 196, 0.1) !important;
+                border: 1px solid rgba(78, 205, 196, 0.3) !important;
+            }
+            
+            .photo-placeholder {
+                background: rgba(255,255,255,0.1) !important;
+                border: 1px solid rgba(255,255,255,0.2) !important;
+            }
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #0f0f23;
+            background-image: 
+                radial-gradient(at 40% 20%, hsla(28,100%,74%,1) 0px, transparent 50%),
+                radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, hsla(355,100%,93%,1) 0px, transparent 50%),
+                radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%),
+                radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%),
+                radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%);
+            min-height: 100vh;
+        }
+        
+        .carte-container {
+            width: 45mm; /* Réduction de la largeur de 54mm à 45mm */
+            height: 32mm; /* Hauteur optimisée pour l'impression */
+            margin: 0 auto;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0d1421 100%);
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 
+                0 0 0 1px rgba(255,255,255,0.15),
+                0 10px 25px rgba(0,0,0,0.4),
+                0 5px 15px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1),
+                inset 0 -1px 0 rgba(0,0,0,0.2);
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .carte-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.1) 0%, transparent 50%),
+                url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='grain' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='50' cy='50' r='1' fill='%23ffffff' opacity='0.03'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23grain)'/%3E%3C/svg%3E");
+            opacity: 0.7;
+        }
+        
+        /* Ajouts pour un design premium */
+        .accent-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                #ff6b6b 0%, 
+                #4ecdc4 25%, 
+                #45b7d1 50%, 
+                #96ceb4 75%, 
+                #ffeaa7 100%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .carte-header-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px 4px; /* Réduction du padding horizontal */
+            position: relative;
+            z-index: 5; /* Z-index plus élevé que le background mais plus bas que le status-badge */
+            height: 20px; /* Hauteur fixe pour l'en-tête */
+        }
+        
+        .carte-header {
+            flex: 1;
+            text-align: center;
+            margin: 0 1px; /* Réduction encore plus de l'espacement */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px; /* Petit espacement entre le texte et le logo FIZATO */
+        }
+        
+        .carte-header-text {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .carte-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 6px;
+            font-weight: 800;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 0.5px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        }
+        
+        .association-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 4px;
+            font-weight: 500;
+            color: #e2e8f0;
+            text-align: center;
+            letter-spacing: 0.3px;
+            line-height: 1.1;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .carte-body {
+            display: flex;
+            flex: 1; /* Permet au corps de la carte de prendre tout l'espace disponible */
+            position: relative;
+            z-index: 2;
+        }
+        
+        .left-section {
+            width: 100%; /* Utiliser toute la largeur disponible */
+            padding: 3px 5px; /* Plus d'espace */
+            background: linear-gradient(135deg, 
+                rgba(255,255,255,0.08) 0%, 
+                rgba(255,255,255,0.03) 100%);
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Distribue l'espace entre les éléments */
+            border-radius: 6px;
+            margin: 2px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+            flex: 1; /* Prend tout l'espace disponible */
+        }
+        
+        .right-section {
+            width: 25%; /* Section droite plus petite */
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(10px);
+            padding: 2px 2px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .photo-section {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1px;
+            height: fit-content;
+        }
+        
+        .photo-placeholder {
+            width: 24px; /* Plus petite pour format carte */
+            height: 28px; /* Même hauteur que les 5 lignes d'infos */
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 3px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 4px;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .photo-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+        
+        .photo-icon {
+            color: rgba(255,255,255,0.6);
+            font-size: 8px;
+        }
+        
+        .info-section {
+            flex: 1;
+            height: 28px; /* Même hauteur que la photo */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Distribution égale */
+        }
+        
+        .info-row {
+            margin-bottom: 0px; /* Pas d'espacement pour maximiser l'espace */
+            font-size: 4px;
+            line-height: 1.0;
+            display: flex;
+            align-items: center;
+            gap: 0.2px; /* Espacement minimal entre label et valeur */
+            height: 5.6px; /* Hauteur fixe pour 5 lignes = 28px total */
+        }
+        
+        .info-label {
+            color: rgba(255,255,255,0.8);
+            font-weight: 600;
+            font-size: 2.8px; /* Légèrement plus grand pour meilleure lisibilité */
+            text-transform: uppercase;
+            letter-spacing: 0.1px;
+            flex-shrink: 0;
+            min-width: 15px; /* Réduire encore l'espace des labels */
+        }
+        
+        .info-value {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 3.2px; /* Légèrement plus lisible */
+            line-height: 1.1;
+            flex-grow: 1;
+            text-align: right;
+            margin-left: 0.3px; /* Espacement minimal après le label */
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .contact-info {
+            margin-top: 0.2px; /* Espacement minimal */
+            padding-top: 0.2px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .validity {
+            color: #4ecdc4;
+            font-weight: 600;
+            font-size: 3px; /* Très petit */
+            text-align: center;
+            margin: 0.3px 0; /* Espacement minimal */
+            padding: 0.3px 1px;
+            background: rgba(78, 205, 196, 0.1);
+            border-radius: 1px;
+            border: 1px solid rgba(78, 205, 196, 0.2);
+            backdrop-filter: blur(5px);
+        }
+        
+        .signatures {
+            font-size: 2px;
+            margin-top: 1px;
+            color: rgba(255,255,255,0.9);
+            display: flex;
+            justify-content: space-between;
+            gap: 3px;
+        }
+        
+        .signature-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1px;
+            border-radius: 3px;
+            background: linear-gradient(135deg, 
+                rgba(255,255,255,0.05) 0%, 
+                rgba(255,255,255,0.02) 100%);
+            backdrop-filter: blur(5px);
+            flex: 1;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .signature-icon {
+            width: 4px; /* Très petit */
+            height: 4px;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            border-radius: 1px;
+            margin-bottom: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .signature-text {
+            color: rgba(255,255,255,0.9);
+            font-weight: 500;
+            font-size: 1.8px; /* Plus petit pour s'adapter */
+            margin-bottom: 0.5px;
+        }
+        
+        .signature-box {
+            width: 100%;
+            height: 7px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 3px;
+            background: linear-gradient(135deg, 
+                rgba(255,255,255,0.95) 0%, 
+                rgba(248,250,252,0.95) 100%);
+            margin-top: 0.5px;
+            box-shadow: 
+                inset 0 1px 2px rgba(0,0,0,0.1),
+                0 1px 3px rgba(255,255,255,0.2);
+        }
+        
+        .devise-section {
+            flex-shrink: 0;
+            width: calc(100% - 8px); /* Largeur avec marges symétriques */
+            font-family: 'Playfair Display', serif;
+            text-align: center;
+            font-size: 3.5px; /* Taille de police réduite */
+            font-weight: 600;
+            font-style: italic;
+            line-height: 1.1;
+            margin: 1px auto 2px auto; /* Centrage automatique avec auto */
+            padding: 2px 3px; /* Padding réduit */
+            color: #ffffff;
+            letter-spacing: 0.2px;
+            background: linear-gradient(135deg, 
+                rgba(78, 205, 196, 0.4) 0%, 
+                rgba(52, 152, 219, 0.4) 50%, 
+                rgba(155, 89, 182, 0.4) 100%);
+            border-radius: 6px;
+            border: 1px solid rgba(78, 205, 196, 0.8);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden; /* Éviter le débordement */
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.2),
+                0 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 8px; /* Hauteur minimale réduite */
+            height: 8px; /* Hauteur fixe plus petite */
+            z-index: 15;
+        }
+        
+        .devise-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255,255,255,0.1) 50%, 
+                transparent 100%);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .logo-universite {
+            width: 18px; /* Plus petit pour format carte */
+            height: 18px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.2);
+            flex-shrink: 0; /* Évite la compression */
+        }
+        
+        .logo-universite img {
+            width: 12px;
+            height: 12px;
+            object-fit: contain;
+            filter: brightness(1.2);
+        }
+        
+        .logo-fizato {
+            width: 16px; /* Légèrement plus petit que le logo université */
+            height: 16px;
+            background: rgba(78, 205, 196, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            flex-shrink: 0; /* Évite la compression */
+        }
+        
+        .logo-fizato img {
+            width: 10px;
+            height: 10px;
+            object-fit: contain;
+            filter: brightness(1.2);
+        }
+        
+        .university-icon, .fizato-icon {
+            color: rgba(255,255,255,0.8);
+            font-size: 6px; /* Très petit */
+        }
+        
+        .fizato-icon {
+            color: rgba(78, 205, 196, 0.9);
+            font-size: 5px; /* Plus petit pour le logo FI.ZA.TO */
+        }
+        
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 14px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin: 0 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            font-weight: 500;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #2a2a3e 0%, #26314e 100%);
+            border-color: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .member-name {
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.1px;
+            font-size: 3px; /* Très compact */
+        }
+        
+        .status-badge {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: #ffffff;
+            font-size: 2.5px; /* Réduction de la taille de police */
+            padding: 0.5px 2px; /* Réduction du padding pour une taille plus compacte */
+            border-radius: 2px; /* Coins moins arrondis pour plus de compacité */
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05px;
+            backdrop-filter: blur(5px);
+            flex-shrink: 0; /* Évite la compression */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 6px; /* Hauteur réduite */
+            width: fit-content; /* Largeur adaptée au contenu */
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="controls no-print">
+        <a href="javascript:window.print()" class="btn">
+            <i class="fas fa-print me-2"></i>Imprimer
+        </a>
+        <a href="{% url 'liste_cartes_membres' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour
+        </a>
+    </div>
+
+    <div class="carte-container">
+        <div class="accent-line"></div>
+        
+        <!-- En-tête avec alignement horizontal -->
+        <div class="carte-header-section">
+            <div class="logo-universite">
+                        {% if membre.association.logo_universite %}
+                            <img src="{{ membre.association.logo_universite.url }}" alt="Logo Université">
+                        {% else %}
+                            <i class="fas fa-university university-icon"></i>
+                        {% endif %}
+            </div>
+            
+                        <div class="carte-header">
+                <div class="carte-header-text">
+                    <div class="carte-title">CARTE MEMBRE FI.ZA.TO</div>
+                    <div class="association-name">FIkambanany ZAnak'i TOamasina</div>
+                </div>
+                <div class="logo-fizato">
+                    <!-- Logo FI.ZA.TO fixe pour toutes les cartes -->
+                    <img src="/media/logos/fizato/FIZATO.png" alt="Logo FI.ZA.TO">
+                </div>
+            </div>
+
+            <div class="status-badge">Actif</div>
+        </div>
+        
+        <div class="carte-body">
+            <!-- Section gauche -->
+            <div class="left-section">
+                <div class="photo-section">
+                    <div class="photo-placeholder">
+                        {% if membre.photo %}
+                            <img src="{{ membre.photo.url }}" alt="Photo {{ membre.prenom }} {{ membre.nom }}">
+                        {% else %}
+                            <i class="fas fa-user photo-icon"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="info-section">
+                        <div class="info-row">
+                            <span class="info-label">Nom et Prénom:</span>
+                            <span class="info-value member-name">{{ membre.prenom }} {{ membre.nom }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Date de naissance:</span>
+                            <span class="info-value">{% if membre.date_naissance %}{{ membre.date_naissance|date:"d/m/Y" }}{% else %}-{% endif %}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Établissement:</span>
+                            <span class="info-value">{% if membre.etablissement %}{{ membre.etablissement }}{% else %}-{% endif %}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Filière / Niveau:</span>
+                            <span class="info-value">{{ membre.filiere }} / {{ membre.parcours }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Adresse (ou Cité universitaire):</span>
+                            <span class="info-value">{% if membre.adresse %}{{ membre.adresse }}{% else %}-{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="contact-info">
+                    <div class="info-row">
+                        <span class="info-label">Téléphone:</span>
+                        <span class="info-value">{% if membre.telephone %}{{ membre.telephone }}{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">{% if membre.email %}{{ membre.email }}{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Entité:</span>
+                        <span class="info-value">{% if membre.association %}{{ membre.association.nom }}{% else %}-{% endif %}</span>
+                    </div>
+                </div>
+                
+                <div class="signatures">
+                    <div class="signature-item">
+                        <div class="signature-icon">
+                            <i class="fas fa-user" style="font-size: 2px; color: white;"></i>
+                        </div>
+                        <span class="signature-text">Signature du Président(e)</span>
+                        <div class="signature-box"></div>
+                    </div>
+                    <div class="signature-item">
+                        <div class="signature-icon">
+                            <i class="fas fa-signature" style="font-size: 2px; color: white;"></i>
+                        </div>
+                        <span class="signature-text">Signature du Titulaire</span>
+                        <div class="signature-box"></div>
+                    </div>
+                </div>
+                
+                <!-- Devise à l'intérieur de la carte -->
+                <div class="devise-section">
+                    <!-- Devise FI.ZA.TO fixe pour toutes les cartes -->
+                    <i class='fas fa-leaf' style='margin-right: 2px; font-size: 3px;'></i>ITODIHO TANY NIAVIAGNA
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-print si demandé
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('print') === 'true') {
+            window.onload = function() {
+                setTimeout(function() {
+                    window.print();
+                }, 500);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+{% extends 'membres/base.html' %}
+
+{% block title %}Profil Utilisateur - FIZATO{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-user me-2"></i>Mon Profil</h5>
+            </div>
+            <div class="card-body">
+                {% if membre %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            {% if membre.photo %}
+                                <img src="{{ membre.photo.url }}" alt="Photo {{ membre.prenom }} {{ membre.nom }}" class="img-fluid rounded">
+                            {% else %}
+                                <div class="bg-light rounded p-4 text-center">
+                                    <i class="fas fa-user fa-3x text-muted"></i>
+                                    <p class="mt-2 text-muted">Aucune photo</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Nom complet :</strong></td>
+                                    <td>{{ membre.prenom }} {{ membre.nom }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Association :</strong></td>
+                                    <td>{{ membre.association.nom }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>N° Carte :</strong></td>
+                                    <td>{{ membre.numero_carte }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Filière :</strong></td>
+                                    <td>{{ membre.filiere }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Parcours :</strong></td>
+                                    <td>{{ membre.parcours }}</td>
+                                </tr>
+                                {% if membre.email %}
+                                <tr>
+                                    <td><strong>Email :</strong></td>
+                                    <td>{{ membre.email }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if membre.telephone %}
+                                <tr>
+                                    <td><strong>Téléphone :</strong></td>
+                                    <td>{{ membre.telephone }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Aucun profil membre n'est associé à votre compte utilisateur.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-cog me-2"></i>Paramètres</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if membre %}
+                    <a href="{% url 'modifier_mes_informations' %}" class="btn btn-primary">
+                        <i class="fas fa-user-edit me-2"></i>Modifier mes informations
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'change_password' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-key me-2"></i>Changer le mot de passe
+                    </a>
+                    
+                    {% if membre %}
+                    <a href="{% url 'print_carte_membre' membre.id %}" class="btn btn-outline-success" target="_blank">
+                        <i class="fas fa-print me-2"></i>Imprimer ma carte
+                    </a>
+                    {% endif %}
+                    
+                    <a href="#" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                        <i class="fas fa-sign-out-alt me-2"></i>Se déconnecter
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>Informations de connexion</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless table-sm">
+                    <tr>
+                        <td><strong>Nom d'utilisateur :</strong></td>
+                        <td>{{ user.username }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Nom :</strong></td>
+                        <td>{{ user.first_name|default:"Non renseigné" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Prénom :</strong></td>
+                        <td>{{ user.last_name|default:"Non renseigné" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Email :</strong></td>
+                        <td>{{ user.email|default:"Non renseigné" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dernière connexion :</strong></td>
+                        <td>{{ user.last_login|date:"d/m/Y H:i"|default:"Jamais" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

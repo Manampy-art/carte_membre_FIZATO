@@ -1,0 +1,109 @@
+{% extends 'membres/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-plus me-2"></i>Ajouter une Association</h2>
+    <a href="{% url 'liste_associations' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Note :</strong> Pour utiliser les formulaires complets, nous devrons implémenter la logique des formulaires Django.
+            Pour l'instant, voici l'interface prête avec tous les champs requis.
+        </div>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Informations de base -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informations de base</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nom de l'Association *</label>
+                                <input type="text" class="form-control" name="nom" required
+                                       placeholder="Ex: Association des Étudiants en Informatique">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Date de création</label>
+                                <input type="date" class="form-control" name="date_creation">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Devise</label>
+                        <input type="text" class="form-control" name="devise" 
+                               placeholder="Ex: Excellence et Innovation">
+                        <div class="form-text">La devise ou le slogan de votre association</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Fondateurs de l'association</label>
+                        <textarea class="form-control" name="fondateurs" rows="3" 
+                                  placeholder="Ex: Ahmed Benali, Fatima Trabelsi, Mohamed Khemir"></textarea>
+                        <div class="form-text">Séparez les noms par des virgules</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="4" 
+                                  placeholder="Description de l'association, ses objectifs, activités principales..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logos -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-image me-2"></i>Logos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Logo de l'Association</label>
+                                <input type="file" class="form-control" name="logo_association" accept="image/*">
+                                <div class="form-text">Format recommandé: PNG ou JPG, 300x300 pixels</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Logo de l'Université</label>
+                                <input type="file" class="form-control" name="logo_universite" accept="image/*">
+                                <div class="form-text">Logo officiel de l'université partenaire</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'liste_associations' %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </a>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save me-2"></i>Enregistrer l'Association
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+</style>
+{% endblock %}

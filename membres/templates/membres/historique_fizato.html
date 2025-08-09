@@ -1,0 +1,1369 @@
+{% extends "membres/base.html" %}
+
+{% block title %}Historique FIZATO{% endblock %}
+
+{% block content %}
+<div class="header-section mb-5">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="header-content">
+            <h1 class="display-5 fw-bold text-warning mb-2">
+                <i class="fas fa-history me-3"></i>Historique FIZATO
+            </h1>
+            <p class="lead text-light mb-0">Chronologie des mandats, bureaux et comités</p>
+            <small class="text-info">
+                <i class="fas fa-info-circle me-1"></i>
+                Vue d'ensemble de l'évolution organisationnelle
+            </small>
+        </div>
+        <div class="header-actions d-flex gap-2">
+            {% if user.is_staff or user.is_superuser %}
+                {% if mandats %}
+                <button type="button" class="btn btn-danger btn-lg border-2" data-bs-toggle="modal" data-bs-target="#viderHistoriqueModal">
+                    <i class="fas fa-trash me-2"></i>Vider l'historique
+                </button>
+                {% endif %}
+            {% endif %}
+            <a href="{% url 'detail_fizato' %}" class="btn btn-warning btn-lg">
+                <i class="fas fa-arrow-left me-2"></i>Retour aux détails
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if mandats %}
+    <!-- Statistiques rapides -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card bg-primary">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ total_mandats }}</h3>
+                    <p>Mandat{{ total_mandats|pluralize }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card bg-success">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ mandats_actuels }}</h3>
+                    <p>Actuel{{ mandats_actuels|pluralize }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card bg-info">
+                <div class="stat-icon">
+                    <i class="fas fa-archive"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ mandats_archives }}</h3>
+                    <p>Archivé{{ mandats_archives|pluralize }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card bg-warning">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ total_membres_historique }}+</h3>
+                    <p>Membres</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="timeline-container">
+        {% for mandat in mandats %}
+        <div class="card mb-4 mandat-card-historique {% if mandat.est_actuel %}mandat-actuel{% endif %}">
+            <div class="card-header mandat-header-historique">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="mandat-icon-historique me-3">
+                            {% if mandat.est_actuel %}
+                                <i class="fas fa-calendar-check fa-2x text-info"></i>
+                            {% else %}
+                                <i class="fas fa-calendar-alt fa-2x text-warning"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h5 class="mb-1 text-light fw-bold">{{ mandat.nom }}</h5>
+                            <p class="mb-0 text-warning fw-bold">
+                                <i class="fas fa-calendar-start me-1"></i>
+                                {{ mandat.date_debut|date:"d F Y" }} - 
+                                {% if mandat.date_fin %}
+                                    {{ mandat.date_fin|date:"d F Y" }}
+                                {% else %}
+                                    <span class="badge bg-success ms-1">En cours</span>
+                                {% endif %}
+                            </p>
+                            {% if not mandat.est_actuel and mandat.date_fin %}
+                            <small class="text-warning">
+                                <i class="fas fa-clock me-1"></i>
+                                Archivé le {{ mandat.date_fin|date:"d F Y" }}
+                            </small>
+                            {% endif %}
+                        </div>
+                        <div class="ms-3">
+                            {% if mandat.est_actuel %}
+                                <span class="badge bg-success fs-6 px-3 py-2">
+                                    <i class="fas fa-check-circle me-1"></i>Mandat Actuel
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6 px-3 py-2">
+                                    <i class="fas fa-archive me-1"></i>Archivé
+                                </span>
+                            {% endif %}
+                        </div>
+                        {% if user.is_staff or user.is_superuser and not mandat.est_actuel %}
+                        <button type="button" class="btn btn-warning btn-sm ms-3" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#supprimerMandatModal{{ mandat.id }}"
+                                title="Supprimer cette archive">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        <div class="card-body">
+            {% if mandat.description %}
+            <p class="text-muted mb-3">{{ mandat.description }}</p>
+            {% endif %}
+            
+            <div class="row">
+                <!-- Bureau du mandat -->
+                <div class="col-lg-8">
+                    {% with mandat.membres_bureau_archive as membres_bureau %}
+                    {% if membres_bureau %}
+                        <h6><i class="fas fa-users me-2"></i>Bureau ({{ membres_bureau|length }} membres)</h6>
+                        
+                        <!-- Organigramme hiérarchique identique au détail -->
+                        <div class="organigramme-historique">
+                            {% regroup membres_bureau by fonction.niveau_hierarchique as bureau_by_level %}
+                            
+                            {% for level in bureau_by_level %}
+                                <div class="niveau-hierarchy-historique mb-4">
+                                    {% for membre_bureau in level.list %}
+                                        {% if membre_bureau.fonction.nom == 'Président' %}
+                                            <!-- Président : En haut, centré, style spécial -->
+                                            <div class="text-center president-container-historique mb-4">
+                                                <div class="president-box-historique d-inline-block position-relative" 
+                                                     data-bs-toggle="tooltip" 
+                                                     data-bs-placement="top" 
+                                                     title="Président FIZATO depuis {{ membre_bureau.membre.date_adhesion|date:'d/m/Y' }}">
+                                                    <div class="membre-card-historique president-card-historique p-3">
+                                                        <div class="photo-container mb-2 position-relative">
+                                                            {% if membre_bureau.membre.photo %}
+                                                                <img src="{{ membre_bureau.membre.photo.url }}" alt="Photo {{ membre_bureau.membre.prenom }}" 
+                                                                     class="photo-president-historique rounded-circle border border-warning shadow">
+                                                            {% else %}
+                                                                <div class="photo-placeholder-president-historique rounded-circle border border-warning shadow d-flex align-items-center justify-content-center">
+                                                                    <i class="fas fa-user fa-2x text-warning"></i>
+                                                                </div>
+                                                            {% endif %}
+                                                            <div class="crown-icon-historique">
+                                                                <i class="fas fa-crown text-warning"></i>
+                                                            </div>
+                                                            <div class="president-glow"></div>
+                                                        </div>
+                                                        <h6 class="nom-membre fw-bold mb-1 text-dark">{{ membre_bureau.membre.prenom }} {{ membre_bureau.membre.nom }}</h6>
+                                                        <p class="fonction-membre text-warning fw-bold mb-1">{{ membre_bureau.fonction.nom }}</p>
+                                                        <small class="association-membre text-muted">{{ membre_bureau.membre.association.nom }}</small>
+                                                    </div>
+                                                    
+                                                    <!-- Ligne de connexion vers le bas -->
+                                                    <div class="connection-line-down-historique"></div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    <!-- Autres fonctions : Affichage en arbre sous le président -->
+                                    {% if level.list.0.fonction.nom != 'Président' %}
+                                        <div class="niveau-sous-president-historique">
+                                            <!-- Titre du niveau -->
+                                            <div class="titre-niveau-historique text-center mb-3">
+                                                <h6 class="text-primary fw-bold border-bottom border-primary d-inline-block pb-1">
+                                                    {{ level.list.0.fonction.nom }}{% if level.list|length > 1 %}s{% endif %}
+                                                    <span class="badge bg-primary ms-2">{{ level.list|length }}</span>
+                                                </h6>
+                                            </div>
+                                            
+                                            <!-- Membres de ce niveau -->
+                                            <div class="row justify-content-center">
+                                                {% for membre_bureau in level.list %}
+                                                <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                                                    <div class="membre-card-historique standard-card-historique position-relative" 
+                                                         data-bs-toggle="tooltip" 
+                                                         data-bs-placement="top" 
+                                                         title="Membre depuis {{ membre_bureau.membre.date_adhesion|date:'d/m/Y' }}">
+                                                        <div class="text-center p-3">
+                                                            <div class="photo-container mb-2 position-relative">
+                                                                {% if membre_bureau.membre.photo %}
+                                                                    <img src="{{ membre_bureau.membre.photo.url }}" alt="Photo {{ membre_bureau.membre.prenom }}" 
+                                                                         class="photo-standard-historique rounded-circle border border-primary shadow-sm">
+                                                                {% else %}
+                                                                    <div class="photo-placeholder-standard-historique rounded-circle border border-primary shadow-sm d-flex align-items-center justify-content-center">
+                                                                        <i class="fas fa-user fa-lg text-primary"></i>
+                                                                    </div>
+                                                                {% endif %}
+                                                                <div class="membre-status-badge position-absolute">
+                                                                    <i class="fas fa-check-circle text-success"></i>
+                                                                </div>
+                                                            </div>
+                                                            <h6 class="nom-membre fw-bold mb-1 text-dark">{{ membre_bureau.membre.prenom }} {{ membre_bureau.membre.nom }}</h6>
+                                                            <p class="fonction-membre text-primary fw-bold mb-1 small">{{ membre_bureau.fonction.nom }}</p>
+                                                            <small class="association-membre text-muted">{{ membre_bureau.membre.association.nom }}</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Styles CSS pour l'organigramme historique -->
+                        <style>
+                            .organigramme-historique {
+                                min-height: 200px;
+                                background: #f8f9fa;
+                                border-radius: 15px;
+                                padding: 20px;
+                                margin-bottom: 20px;
+                            }
+                            
+                            .president-card-historique {
+                                background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+                                border: 2px solid #f1c40f;
+                                border-radius: 15px;
+                                box-shadow: 0 8px 25px rgba(241, 196, 15, 0.3);
+                                transition: all 0.3s ease;
+                                min-width: 200px;
+                            }
+                            
+                            .president-card-historique:hover {
+                                transform: translateY(-3px);
+                                box-shadow: 0 12px 35px rgba(241, 196, 15, 0.4);
+                            }
+                            
+                            .standard-card-historique {
+                                background: white;
+                                border: 2px solid #3498db;
+                                border-radius: 12px;
+                                box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+                                transition: all 0.3s ease;
+                            }
+                            
+                            .standard-card-historique:hover {
+                                transform: translateY(-3px);
+                                box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+                                border-color: #2980b9;
+                            }
+                            
+                            .photo-president-historique {
+                                width: 80px;
+                                height: 80px;
+                                object-fit: cover;
+                                transition: transform 0.3s ease;
+                            }
+                            
+                            .photo-placeholder-president-historique {
+                                width: 80px;
+                                height: 80px;
+                                background: rgba(241, 196, 15, 0.1);
+                            }
+                            
+                            .photo-standard-historique {
+                                width: 60px;
+                                height: 60px;
+                                object-fit: cover;
+                                transition: transform 0.3s ease;
+                            }
+                            
+                            .photo-placeholder-standard-historique {
+                                width: 60px;
+                                height: 60px;
+                                background: rgba(52, 152, 219, 0.1);
+                            }
+                            
+                            .membre-card-historique:hover .photo-president-historique,
+                            .membre-card-historique:hover .photo-standard-historique {
+                                transform: scale(1.1);
+                            }
+                            
+                            .crown-icon-historique {
+                                position: absolute;
+                                top: -5px;
+                                left: 50%;
+                                transform: translateX(-50%);
+                                background: white;
+                                border-radius: 50%;
+                                width: 25px;
+                                height: 25px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                            }
+                            
+                            .connection-line-down-historique {
+                                position: absolute;
+                                bottom: -20px;
+                                left: 50%;
+                                transform: translateX(-50%);
+                                width: 2px;
+                                height: 20px;
+                                background: #3498db;
+                            }
+                            
+                            .connection-line-down-historique::after {
+                                content: '';
+                                position: absolute;
+                                bottom: -5px;
+                                left: -3px;
+                                width: 8px;
+                                height: 8px;
+                                background: #3498db;
+                                border-radius: 50%;
+                            }
+                            
+                            .titre-niveau-historique {
+                                position: relative;
+                            }
+                            
+                            .titre-niveau-historique::before {
+                                content: '';
+                                position: absolute;
+                                top: -20px;
+                                left: 50%;
+                                transform: translateX(-50%);
+                                width: 100px;
+                                height: 2px;
+                                background: #3498db;
+                            }
+                            
+                            /* Amélioration président avec glow effect */
+                            .president-glow {
+                                position: absolute;
+                                top: -5px;
+                                left: -5px;
+                                right: -5px;
+                                bottom: -5px;
+                                border-radius: 50%;
+                                background: radial-gradient(circle, rgba(241, 196, 15, 0.3) 0%, transparent 70%);
+                                animation: glow 2s ease-in-out infinite alternate;
+                                z-index: -1;
+                            }
+                            
+                            @keyframes glow {
+                                from { opacity: 0.5; transform: scale(1); }
+                                to { opacity: 1; transform: scale(1.1); }
+                            }
+                            
+                            /* Status badge pour membres */
+                            .membre-status-badge {
+                                top: -5px;
+                                right: -5px;
+                                background: white;
+                                border-radius: 50%;
+                                width: 20px;
+                                height: 20px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 0.8rem;
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                            }
+                            
+                            /* Animation pour icône doyen */
+                            .doyen-icon-animate {
+                                transition: all 0.3s ease;
+                            }
+                            
+                            .doyen-card-historique:hover .doyen-icon-animate {
+                                transform: rotate(15deg) scale(1.2);
+                                color: #138496 !important;
+                            }
+                            
+                            /* Tooltips personnalisés */
+                            .tooltip {
+                                font-size: 0.875rem;
+                            }
+                            
+                            .tooltip-inner {
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white;
+                                border-radius: 8px;
+                                padding: 0.5rem 1rem;
+                                font-weight: 500;
+                                text-align: center;
+                                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                            }
+                            
+                            .tooltip.bs-tooltip-top .tooltip-arrow::before {
+                                border-top-color: #667eea;
+                            }
+                            
+                            .tooltip.bs-tooltip-bottom .tooltip-arrow::before {
+                                border-bottom-color: #667eea;
+                            }
+                            
+                            .tooltip.bs-tooltip-start .tooltip-arrow::before {
+                                border-left-color: #667eea;
+                            }
+                            
+                            .tooltip.bs-tooltip-end .tooltip-arrow::before {
+                                border-right-color: #667eea;
+                            }
+                        </style>
+                    {% else %}
+                        <div class="alert alert-light">
+                            <i class="fas fa-info-circle me-2"></i>Aucun membre du bureau pour ce mandat
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                
+                <!-- Comité des doyens du mandat -->
+                <div class="col-lg-4">
+                    {% with mandat.comite_doyen_archive as comite_doyen %}
+                    {% if comite_doyen %}
+                        <h6><i class="fas fa-user-graduate me-2"></i>Comité des doyens ({{ comite_doyen|length }} membres)</h6>
+                        <div class="comite-historique">
+                            {% for doyen in comite_doyen %}
+                            <div class="doyen-card-historique mb-3 p-3 border rounded bg-light position-relative" 
+                                 data-bs-toggle="tooltip" 
+                                 data-bs-placement="left" 
+                                 title="Doyen {{ doyen.titre }} depuis {{ doyen.membre.date_adhesion|date:'d/m/Y' }}">
+                                <div class="d-flex align-items-center">
+                                    {% if doyen.membre.photo %}
+                                        <img src="{{ doyen.membre.photo.url }}" alt="Photo {{ doyen.membre.prenom }}" 
+                                             class="rounded-circle me-3 doyen-photo-historique" style="width: 50px; height: 50px; object-fit: cover; border: 2px solid #17a2b8;">
+                                    {% else %}
+                                        <div class="rounded-circle bg-info d-flex align-items-center justify-content-center me-3 doyen-photo-placeholder-historique" 
+                                             style="width: 50px; height: 50px; border: 2px solid #17a2b8;">
+                                            <i class="fas fa-user-graduate text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold text-dark">{{ doyen.membre.prenom }} {{ doyen.membre.nom }}</h6>
+                                        <p class="mb-1 text-info fw-bold">{{ doyen.titre }}</p>
+                                        <small class="text-muted">{{ doyen.membre.association.nom }}</small>
+                                    </div>
+                                    <div class="ms-auto">
+                                        <i class="fas fa-graduation-cap text-info fa-lg doyen-icon-animate"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Styles pour le comité des doyens -->
+                        <style>
+                            .doyen-card-historique {
+                                background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+                                border: 2px solid #17a2b8 !important;
+                                border-radius: 12px;
+                                box-shadow: 0 4px 15px rgba(23, 162, 184, 0.2);
+                                transition: all 0.3s ease;
+                            }
+                            
+                            .doyen-card-historique:hover {
+                                transform: translateX(5px);
+                                box-shadow: 0 6px 20px rgba(23, 162, 184, 0.3);
+                            }
+                            
+                            .doyen-photo-historique {
+                                transition: transform 0.3s ease;
+                            }
+                            
+                            .doyen-card-historique:hover .doyen-photo-historique {
+                                transform: scale(1.1);
+                            }
+                        </style>
+                    {% else %}
+                        <div class="alert alert-light">
+                            <i class="fas fa-info-circle me-2"></i>Aucun membre du comité des doyens pour ce mandat
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+{% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-history fa-3x text-muted mb-3"></i>
+            <h5>Aucun historique disponible</h5>
+            <p class="text-muted">Aucun mandat n'a encore été créé.</p>
+            {% if user.is_staff or user.is_superuser %}
+            <a href="{% url 'creer_mandat' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Créer le premier mandat
+            </a>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+
+<!-- Modal pour vider tout l'historique -->
+{% if user.is_staff or user.is_superuser %}
+<div class="modal fade" id="viderHistoriqueModal" tabindex="-1" aria-labelledby="viderHistoriqueModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white position-relative overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%); background-size: 20px 20px; opacity: 0.1;"></div>
+                <h5 class="modal-title position-relative" id="viderHistoriqueModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2 fa-bounce"></i>Vider l'historique
+                </h5>
+                <button type="button" class="btn-close btn-close-white position-relative" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-warning border-0 rounded-3 mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning me-3"></i>
+                        <div>
+                            <strong>Attention !</strong> Cette action est irréversible.
+                            <br><small class="text-muted">Toutes les données seront définitivement perdues.</small>
+                        </div>
+                    </div>
+                </div>
+                <p class="fs-5 mb-3">Êtes-vous sûr de vouloir supprimer <strong class="text-danger">tout l'historique</strong> ?</p>
+                <div class="bg-light rounded-3 p-3">
+                    <p class="text-muted mb-2 fw-bold">Cela supprimera :</p>
+                    <ul class="text-muted mb-0">
+                        <li><i class="fas fa-calendar-alt me-2 text-primary"></i>Tous les mandats terminés</li>
+                        <li><i class="fas fa-users me-2 text-info"></i>Tous les membres du bureau archivés</li>
+                        <li><i class="fas fa-user-graduate me-2 text-warning"></i>Tous les membres du comité des doyens archivés</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-secondary btn-lg me-2" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </button>
+                <form method="post" action="{% url 'vider_historique' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-lg">
+                        <i class="fas fa-trash me-2"></i>Vider l'historique
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals pour supprimer chaque mandat individuellement -->
+{% for mandat in mandats %}
+<div class="modal fade" id="supprimerMandatModal{{ mandat.id }}" tabindex="-1" aria-labelledby="supprimerMandatModalLabel{{ mandat.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-warning text-dark position-relative overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%), linear-gradient(-45deg, rgba(0,0,0,0.05) 25%, transparent 25%); background-size: 15px 15px; opacity: 0.3;"></div>
+                <h5 class="modal-title position-relative fw-bold" id="supprimerMandatModalLabel{{ mandat.id }}">
+                    <i class="fas fa-exclamation-triangle me-2 fa-bounce"></i>Supprimer l'archive
+                </h5>
+                <button type="button" class="btn-close position-relative" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-archive fa-2x text-warning"></i>
+                    </div>
+                    <h6 class="fw-bold">Suppression d'archive</h6>
+                </div>
+                
+                <p class="fs-5 text-center mb-3">
+                    Êtes-vous sûr de vouloir supprimer l'archive du mandat 
+                    <strong class="text-warning">"{{ mandat.nom }}"</strong> ?
+                </p>
+                
+                <div class="card bg-light border-0 mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>Informations du mandat
+                        </h6>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <small class="text-muted d-block">Période</small>
+                                <strong>{{ mandat.date_debut|date:"d F Y" }} - {{ mandat.date_fin|date:"d F Y" }}</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                <small class="text-muted d-block">Statut</small>
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-archive me-1"></i>Archivé
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info border-0 rounded-3">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-trash me-2"></i>Données qui seront supprimées :
+                    </h6>
+                    <ul class="mb-0">
+                        <li>
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            <strong>{{ mandat.membres_bureau_archive|length }}</strong> membre(s) du bureau archivé(s)
+                        </li>
+                        <li>
+                            <i class="fas fa-user-graduate me-2 text-info"></i>
+                            <strong>{{ mandat.comite_doyen_archive|length }}</strong> membre(s) du comité des doyens archivé(s)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-secondary btn-lg me-2" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </button>
+                <form method="post" action="{% url 'supprimer_mandat_archive' mandat.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning btn-lg">
+                        <i class="fas fa-trash me-2"></i>Supprimer cette archive
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% endblock %}
+
+<style>
+/* Header Section Styling */
+.header-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.header-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="a" cx="50%" cy="50%"><stop offset="0%" stop-color="rgba(255,255,255,0.1)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient></defs><circle cx="10" cy="10" r="8" fill="url(%23a)"/><circle cx="50" cy="5" r="6" fill="url(%23a)"/><circle cx="80" cy="15" r="4" fill="url(%23a)"/></svg>') repeat;
+    opacity: 0.1;
+    animation: float 20s infinite linear;
+}
+
+@keyframes float {
+    from { transform: translateX(-100px); }
+    to { transform: translateX(100px); }
+}
+
+.header-content h1 {
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    margin-bottom: 0.5rem;
+    color: #ffc107 !important;
+}
+
+.header-content .lead {
+    color: #f8f9fa !important;
+    font-weight: 300;
+    text-shadow: 0 1px 5px rgba(0,0,0,0.2);
+}
+
+.header-content small {
+    color: #17a2b8 !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.header-actions .btn {
+    border-width: 2px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.header-actions .btn-warning {
+    background: #ffc107;
+    border-color: #ffc107;
+    color: #212529 !important;
+}
+
+.header-actions .btn-danger {
+    background: #dc3545;
+    border-color: #dc3545;
+    color: #f8f9fa !important;
+}
+
+.header-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.header-actions .btn-warning:hover {
+    background: #ffca2c;
+    color: #212529 !important;
+}
+
+.header-actions .btn-danger:hover {
+    background: #e15361;
+    color: #f8f9fa !important;
+}
+
+/* Timeline Container */
+.timeline-container {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-container::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(to bottom, #3498db, #9b59b6);
+    border-radius: 2px;
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+}
+
+/* Amélioration des contrastes de texte */
+.text-light {
+    color: #f8f9fa !important;
+}
+
+.text-info {
+    color: #17a2b8 !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+/* Styles pour les cartes de mandat */
+.mandat-card-historique {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: all 0.4s ease;
+    position: relative;
+    margin-left: 20px;
+    margin-bottom: 2.5rem;
+    background: white;
+}
+
+.mandat-card-historique::before {
+    content: '';
+    position: absolute;
+    left: -35px;
+    top: 30px;
+    width: 20px;
+    height: 20px;
+    background: #6c757d;
+    border: 4px solid white;
+    border-radius: 50%;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.2);
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+/* Style spécial pour le mandat actuel */
+.mandat-card-historique.mandat-actuel::before {
+    background: #27ae60;
+    animation: pulse 2s infinite;
+    width: 25px;
+    height: 25px;
+    border-width: 5px;
+}
+
+.mandat-card-historique:not(.mandat-actuel)::before {
+    background: #6c757d;
+}
+
+@keyframes pulse {
+    0% { 
+        box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7);
+        transform: scale(1);
+    }
+    70% { 
+        box-shadow: 0 0 0 10px rgba(39, 174, 96, 0);
+        transform: scale(1.1);
+    }
+    100% { 
+        box-shadow: 0 0 0 0 rgba(39, 174, 96, 0);
+        transform: scale(1);
+    }
+}
+
+.mandat-card-historique:hover {
+    transform: translateX(15px) translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.mandat-card-historique:hover::before {
+    transform: scale(1.2);
+}
+
+/* Header styles différents selon le statut */
+.mandat-header-historique {
+    border: none;
+    padding: 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.mandat-header-historique::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.1) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.1) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    opacity: 0.1;
+}
+
+.mandat-card-historique.mandat-actuel .mandat-header-historique {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+}
+
+.mandat-card-historique.mandat-actuel .mandat-header-historique::before {
+    background: linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(255,255,255,0.2) 25%, transparent 25%);
+    background-size: 30px 30px;
+}
+
+.mandat-icon-historique {
+    background: rgba(255,193,7,0.25);
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s ease;
+    border: 3px solid rgba(255,193,7,0.5);
+    position: relative;
+}
+
+.mandat-icon-historique::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, rgba(255,193,7,0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mandat-card-historique:hover .mandat-icon-historique {
+    transform: scale(1.15) rotate(15deg);
+    background: rgba(255,193,7,0.4);
+    border-color: rgba(255,193,7,0.8);
+}
+
+.mandat-card-historique:hover .mandat-icon-historique::after {
+    opacity: 1;
+}
+
+/* Amélioration des badges */
+.badge.fs-6 {
+    font-size: 0.875rem !important;
+    padding: 0.6rem 1.2rem !important;
+    border-radius: 30px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 2px solid rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    color: #f8f9fa !important;
+}
+
+.badge.fs-6:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+/* Amélioration du contenu des cartes */
+.card-body {
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    position: relative;
+}
+
+.card-body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3498db, #9b59b6);
+    border-radius: 0 0 10px 10px;
+}
+
+/* Améliorations pour les alertes "aucun membre" */
+.alert-light {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px dashed #dee2e6;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.alert-light:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-section {
+        padding: 1.5rem;
+        text-align: center;
+    }
+    
+    .header-actions {
+        margin-top: 1rem;
+        justify-content: center;
+    }
+    
+    .timeline-container {
+        padding-left: 20px;
+    }
+    
+    .timeline-container::before {
+        left: 10px;
+        width: 3px;
+    }
+    
+    .mandat-card-historique {
+        margin-left: 15px;
+    }
+    
+    .mandat-card-historique::before {
+        left: -25px;
+        width: 15px;
+        height: 15px;
+    }
+    
+    .mandat-card-historique.mandat-actuel::before {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .mandat-header-historique {
+        padding: 20px;
+    }
+    
+    .mandat-icon-historique {
+        width: 55px;
+        height: 55px;
+    }
+    
+    .badge.fs-6 {
+        font-size: 0.75rem !important;
+        padding: 0.4rem 0.8rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .header-section {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .header-content h1 {
+        font-size: 1.8rem;
+    }
+    
+    .timeline-container {
+        padding-left: 15px;
+    }
+    
+    .mandat-card-historique {
+        margin-left: 10px;
+        margin-bottom: 2rem;
+    }
+    
+    .mandat-header-historique {
+        padding: 15px;
+    }
+    
+    .mandat-card-historique:hover {
+        transform: translateX(5px) translateY(-2px);
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+}
+
+/* Statistiques Dashboard */
+.stat-card {
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    border: none;
+    backdrop-filter: blur(10px);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 100%);
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+    transform: scale(0);
+    transition: transform 0.6s ease;
+    z-index: 1;
+}
+
+.stat-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+}
+
+.stat-card:hover::after {
+    transform: scale(1);
+}
+
+.stat-card .stat-icon {
+    position: relative;
+    z-index: 3;
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 1rem;
+    background: rgba(0,0,0,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: #f8f9fa;
+    transition: all 0.4s ease;
+    border: 3px solid rgba(0,0,0,0.2);
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.15) rotate(10deg);
+    background: rgba(0,0,0,0.25);
+    border-color: rgba(0,0,0,0.4);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.stat-card .stat-content {
+    position: relative;
+    z-index: 3;
+}
+
+.stat-card .stat-content h3 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: #f8f9fa;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-content h3 {
+    transform: scale(1.1);
+    text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+.stat-card .stat-content p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    color: rgba(248,249,250,0.9);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-content p {
+    color: #f8f9fa;
+    transform: translateY(-2px);
+}
+
+/* Couleurs spécifiques pour chaque type de statistique */
+.stat-card.bg-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-card.bg-success {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+}
+
+.stat-card.bg-info {
+    background: linear-gradient(135deg, #3ca55c 0%, #b5fffc 100%);
+}
+
+.stat-card.bg-warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* Animation d'entrée */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-card {
+    animation: slideInUp 0.6s ease forwards;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* Responsive pour les statistiques */
+@media (max-width: 768px) {
+    .stat-card {
+        padding: 1.5rem 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card .stat-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .stat-card .stat-content h3 {
+        font-size: 2rem;
+    }
+    
+    .stat-card .stat-content p {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .stat-card {
+        padding: 1.2rem 0.8rem;
+    }
+    
+    .stat-card .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.3rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .stat-card .stat-content h3 {
+        font-size: 1.8rem;
+    }
+    
+    .stat-card .stat-content p {
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialisation des tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            delay: { show: 500, hide: 100 },
+            placement: 'auto'
+        });
+    });
+    
+    // Animation d'apparition progressive des cartes de mandat
+    const mandatCards = document.querySelectorAll('.mandat-card-historique');
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const cardObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '0';
+                entry.target.style.transform = 'translateY(30px)';
+                
+                setTimeout(function() {
+                    entry.target.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, 100);
+                
+                cardObserver.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    mandatCards.forEach(function(card) {
+        cardObserver.observe(card);
+    });
+    
+    // Animation de compteur pour les statistiques
+    function animateCounter(element, target) {
+        let current = 0;
+        const increment = target / 50;
+        const timer = setInterval(function() {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(current);
+        }, 30);
+    }
+    
+    // Observer pour les statistiques
+    const statCards = document.querySelectorAll('.stat-card h3');
+    const statObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                const target = parseInt(entry.target.textContent.replace('+', ''));
+                if (!isNaN(target)) {
+                    entry.target.textContent = '0';
+                    setTimeout(function() {
+                        animateCounter(entry.target, target);
+                    }, 300);
+                }
+                statObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+    
+    statCards.forEach(function(card) {
+        statObserver.observe(card);
+    });
+    
+    // Effet parallaxe léger pour l'en-tête
+    window.addEventListener('scroll', function() {
+        const scrolled = window.pageYOffset;
+        const headerSection = document.querySelector('.header-section');
+        if (headerSection) {
+            const rate = scrolled * -0.5;
+            headerSection.style.transform = `translateY(${rate}px)`;
+        }
+    });
+    
+    // Confirmation élégante pour les suppressions
+    const deleteButtons = document.querySelectorAll('button[data-bs-target*="supprimerMandatModal"]');
+    deleteButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            // Ajouter un petit délai pour l'effet
+            setTimeout(function() {
+                const modal = document.querySelector(button.getAttribute('data-bs-target'));
+                if (modal) {
+                    modal.querySelector('.modal-content').style.animation = 'slideInDown 0.3s ease';
+                }
+            }, 50);
+        });
+    });
+    
+    // Animation pour les modaux
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(function(modal) {
+        modal.addEventListener('show.bs.modal', function() {
+            this.querySelector('.modal-content').style.animation = 'modalSlideIn 0.3s ease';
+        });
+        
+        modal.addEventListener('hide.bs.modal', function() {
+            this.querySelector('.modal-content').style.animation = 'modalSlideOut 0.2s ease';
+        });
+    });
+});
+
+// Animations CSS pour les modaux
+const modalStyles = `
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes modalSlideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.98);
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+`;
+
+// Injection des styles d'animation
+const styleSheet = document.createElement('style');
+styleSheet.textContent = modalStyles;
+document.head.appendChild(styleSheet);
+</script>

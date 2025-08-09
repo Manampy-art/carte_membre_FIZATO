@@ -1,0 +1,105 @@
+{% extends 'membres/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-building me-2"></i>{{ association.nom }}</h2>
+            <p class="text-muted mb-0">Fiche détaillée de l'association</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'ajouter_membre_association' association.pk %}" class="btn btn-success">
+                <i class="fas fa-user-plus me-2"></i>Ajouter un membre
+            </a>
+            <a href="{% url 'modifier_association' association.pk %}" class="btn btn-outline-primary">
+                <i class="fas fa-edit me-2"></i>Modifier
+            </a>
+            <a href="{% url 'supprimer_association' association.pk %}" class="btn btn-outline-danger">
+                <i class="fas fa-trash me-2"></i>Supprimer
+            </a>
+            <a href="{% url 'liste_associations' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informations</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><strong>Nom :</strong> {{ association.nom }}</li>
+                        <li class="mb-2"><strong>Date de création :</strong> {{ association.date_creation|date:"d/m/Y" }}</li>
+                        {% if association.devise %}
+                        <li class="mb-2"><strong>Devise :</strong> <em>"{{ association.devise }}"</em></li>
+                        {% endif %}
+                        {% if association.fondateurs %}
+                        <li class="mb-2"><strong>Fondateurs :</strong> {{ association.fondateurs }}</li>
+                        {% endif %}
+                        {% if association.description %}
+                        <li class="mb-2"><strong>Description :</strong> {{ association.description }}</li>
+                        {% endif %}
+                        <li class="mb-2"><strong>Ajoutée le :</strong> {{ association.created_at|date:"d/m/Y H:i" }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="mb-0"><i class="fas fa-images me-2"></i>Logos</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        {% if association.logo_association %}
+                            <img src="{{ association.logo_association.url }}" alt="Logo Association" class="img-fluid rounded shadow mb-2" style="max-height: 120px;">
+                            <div class="small text-success">Logo Association</div>
+                        {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center mb-2" style="height: 120px; width: 120px; margin: 0 auto;">
+                                <i class="fas fa-building fa-2x text-muted"></i>
+                            </div>
+                            <div class="small text-muted">Pas de logo</div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {% if association.logo_universite %}
+                            <img src="{{ association.logo_universite.url }}" alt="Logo Université" class="img-fluid rounded shadow mb-2" style="max-height: 120px;">
+                            <div class="small text-success">Logo Université</div>
+                        {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center mb-2" style="height: 120px; width: 120px; margin: 0 auto;">
+                                <i class="fas fa-university fa-2x text-muted"></i>
+                            </div>
+                            <div class="small text-muted">Pas de logo</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>Membres</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2"><span class="badge bg-info">{{ membres.count }} membre{{ membres.count|pluralize }}</span></div>
+                    {% if membres %}
+                        <ul class="list-group list-group-flush">
+                            {% for membre in membres %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ membre.prenom }} {{ membre.nom }}</span>
+                                <span class="badge bg-secondary">{{ membre.numero_carte }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="text-muted">Aucun membre pour cette association.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

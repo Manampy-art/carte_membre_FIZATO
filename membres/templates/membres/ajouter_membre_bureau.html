@@ -1,0 +1,145 @@
+{% extends "membres/base.html" %}
+
+{% block title %}Ajouter un membre au bureau - FIZATO{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-user-tie me-2"></i>Ajouter un membre au bureau</h2>
+        <p class="text-muted mb-0">Assignez un membre existant à une fonction du bureau</p>
+    </div>
+    <a href="{% url 'detail_fizato' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-tie me-2"></i>Assignation au bureau
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <!-- Membre -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.membre.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-1"></i>{{ form.membre.label }}
+                            </label>
+                            {{ form.membre }}
+                            {% if form.membre.errors %}
+                                <div class="text-danger">{{ form.membre.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Fonction -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.fonction.id_for_label }}" class="form-label">
+                                <i class="fas fa-briefcase me-1"></i>{{ form.fonction.label }}
+                            </label>
+                            {{ form.fonction }}
+                            {% if form.fonction.errors %}
+                                <div class="text-danger">{{ form.fonction.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Date de début -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.date_debut.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar-plus me-1"></i>{{ form.date_debut.label }}
+                            </label>
+                            {{ form.date_debut }}
+                            {% if form.date_debut.errors %}
+                                <div class="text-danger">{{ form.date_debut.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Date de fin -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.date_fin.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar-minus me-1"></i>{{ form.date_fin.label }}
+                            </label>
+                            {{ form.date_fin }}
+                            <small class="form-text text-muted">Laissez vide si le mandat n'a pas de date de fin</small>
+                            {% if form.date_fin.errors %}
+                                <div class="text-danger">{{ form.date_fin.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Mandat actuel -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.est_actuel }}
+                            <label class="form-check-label" for="{{ form.est_actuel.id_for_label }}">
+                                <i class="fas fa-check-circle me-1"></i>{{ form.est_actuel.label }}
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">
+                            Si coché, ce membre remplacera l'occupant actuel de cette fonction
+                        </small>
+                        {% if form.est_actuel.errors %}
+                            <div class="text-danger">{{ form.est_actuel.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'detail_fizato' %}" class="btn btn-secondary me-2">
+                            <i class="fas fa-times me-1"></i>Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Ajouter au bureau
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Informations importantes
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Règles importantes :</strong>
+                    <ul class="mb-0 mt-2">
+                        <li><strong>Président :</strong> Il ne peut y avoir qu'un seul président actuel. L'ajout d'un nouveau président remplacera automatiquement l'ancien.</li>
+                        <li><strong>Autres fonctions :</strong> Vous pouvez avoir plusieurs personnes pour la même fonction (ex: 3 Vice-présidents).</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Conseil :</strong> Assurez-vous que les dates de mandat sont cohérentes et que le membre sélectionné est apte à occuper cette fonction.
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-users me-2"></i>Membres disponibles
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    Seuls les membres déjà enregistrés dans le système peuvent être ajoutés au bureau. 
+                    Si le membre souhaité n'apparaît pas dans la liste, vous devez d'abord l'ajouter comme membre d'une association.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

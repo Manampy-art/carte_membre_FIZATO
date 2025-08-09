@@ -1,0 +1,185 @@
+{% extends "membres/base.html" %}
+
+{% block title %}{{ membre_bureau.membre.prenom }} {{ membre_bureau.membre.nom }} - Bureau FIZATO{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-user-tie me-2"></i>{{ membre_bureau.membre.prenom }} {{ membre_bureau.membre.nom }}</h2>
+        <p class="text-muted mb-0">{{ membre_bureau.fonction.nom }} - Bureau FIZATO</p>
+    </div>
+    <a href="{% url 'detail_fizato' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour au bureau
+    </a>
+</div>
+
+<div class="row">
+    <!-- Photo et informations principales -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body text-center">
+                {% if membre_bureau.membre.photo %}
+                    <img src="{{ membre_bureau.membre.photo.url }}" alt="Photo {{ membre_bureau.membre.prenom }}" 
+                         class="img-fluid rounded-circle mb-3 border border-primary" style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                    <i class="fas fa-user-circle fa-5x text-muted mb-3"></i>
+                {% endif %}
+                
+                <h4 class="fw-bold">{{ membre_bureau.membre.prenom }} {{ membre_bureau.membre.nom }}</h4>
+                <p class="text-primary fw-bold fs-5">
+                    {% if membre_bureau.fonction.nom == 'Président' %}
+                        <i class="fas fa-crown me-2"></i>
+                    {% else %}
+                        <i class="fas fa-user-tie me-2"></i>
+                    {% endif %}
+                    {{ membre_bureau.fonction.nom }}
+                </p>
+                
+                <span class="badge bg-{% if membre_bureau.est_actuel %}success{% else %}secondary{% endif %} fs-6">
+                    {% if membre_bureau.est_actuel %}Mandat actuel{% else %}Mandat terminé{% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations détaillées -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Informations détaillées
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Informations personnelles</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Nom complet :</strong></td>
+                                <td>{{ membre_bureau.membre.prenom }} {{ membre_bureau.membre.nom }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Association :</strong></td>
+                                <td>{{ membre_bureau.membre.association.nom }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>N° Carte :</strong></td>
+                                <td><span class="badge bg-info">{{ membre_bureau.membre.numero_carte }}</span></td>
+                            </tr>
+                            {% if membre_bureau.membre.filiere %}
+                            <tr>
+                                <td><strong>Filière :</strong></td>
+                                <td>{{ membre_bureau.membre.filiere }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if membre_bureau.membre.parcours %}
+                            <tr>
+                                <td><strong>Parcours :</strong></td>
+                                <td>{{ membre_bureau.membre.parcours }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Mandat au bureau</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Fonction :</strong></td>
+                                <td>{{ membre_bureau.fonction.nom }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Niveau hiérarchique :</strong></td>
+                                <td><span class="badge bg-primary">{{ membre_bureau.fonction.niveau_hierarchique }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Date de début :</strong></td>
+                                <td>{{ membre_bureau.date_debut|date:"d F Y" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Date de fin :</strong></td>
+                                <td>{% if membre_bureau.date_fin %}{{ membre_bureau.date_fin|date:"d F Y" }}{% else %}En cours{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Statut :</strong></td>
+                                <td>
+                                    {% if membre_bureau.est_actuel %}
+                                        <span class="badge bg-success">Actuel</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Terminé</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                {% if membre_bureau.fonction.description %}
+                <div class="mt-3">
+                    <h6 class="text-muted">Description de la fonction</h6>
+                    <p class="text-muted">{{ membre_bureau.fonction.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Informations de contact -->
+        {% if membre_bureau.membre.email or membre_bureau.membre.telephone or membre_bureau.membre.nom_facebook %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-address-book me-2"></i>Informations de contact
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% if membre_bureau.membre.email %}
+                    <div class="col-md-4 mb-2">
+                        <i class="fas fa-envelope text-primary me-2"></i>
+                        <a href="mailto:{{ membre_bureau.membre.email }}">{{ membre_bureau.membre.email }}</a>
+                    </div>
+                    {% endif %}
+                    {% if membre_bureau.membre.telephone %}
+                    <div class="col-md-4 mb-2">
+                        <i class="fas fa-phone text-success me-2"></i>
+                        <a href="tel:{{ membre_bureau.membre.telephone }}">{{ membre_bureau.membre.telephone }}</a>
+                    </div>
+                    {% endif %}
+                    {% if membre_bureau.membre.nom_facebook %}
+                    <div class="col-md-4 mb-2">
+                        <i class="fab fa-facebook text-info me-2"></i>
+                        {{ membre_bureau.membre.nom_facebook }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if user.is_staff or user.is_superuser %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-tools me-2"></i>Actions administratives
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex gap-2">
+                    <a href="{% url 'supprimer_membre_bureau' membre_bureau.id %}" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Retirer du bureau
+                    </a>
+                    <a href="{% url 'modifier_membre' membre_bureau.membre.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-2"></i>Modifier les informations membre
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

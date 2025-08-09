@@ -1,0 +1,557 @@
+{% extends "membres/base.html" %}
+
+{% block title %}Détails FIZATO - Organisation{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-home me-2"></i>FI.ZA.TO</h2>
+        <p class="text-muted mb-0">FIkambanany ZAnak'i TOamasina</p>
+    </div>
+    {% if user.is_staff or user.is_superuser %}
+    <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-plus me-2"></i>Actions
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'ajouter_info_fizato' %}">
+                <i class="fas fa-edit me-2"></i>{% if info_fizato %}Modifier{% else %}Ajouter{% endif %} informations FIZATO
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'ajouter_fonction_bureau' %}">
+                <i class="fas fa-briefcase me-2"></i>Ajouter fonction bureau
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'ajouter_membre_bureau' %}">
+                <i class="fas fa-user-tie me-2"></i>Ajouter membre au bureau
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'ajouter_comite_doyen' %}">
+                <i class="fas fa-user-graduate me-2"></i>Ajouter au comité des doyens
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            {% if mandat_actuel %}
+            <li><a class="dropdown-item text-warning" href="{% url 'terminer_mandat' %}">
+                <i class="fas fa-hourglass-end me-2"></i>Terminer mandat actuel
+            </a></li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Bouton spécial pour terminer le mandat du bureau actuel -->
+{% if mandat_actuel and membres_bureau %}
+    {% if user.is_staff or user.is_superuser %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Bureau actuel actif.</strong> Cliquez ci-dessous pour terminer automatiquement ce mandat et créer le suivant.
+            </div>
+            <a href="{% url 'terminer_mandat_bureau' %}" class="btn btn-warning">
+                <i class="fas fa-archive me-2"></i>Terminer le mandat et créer le suivant
+            </a>
+        </div>
+    </div>
+</div>
+    {% endif %}
+{% endif %}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            {% if mandat_actuel %}
+            <div class="alert alert-success mb-0 flex-grow-1 me-3">
+                <i class="fas fa-calendar-check me-2"></i>
+                <strong>Mandat actuel :</strong> {{ mandat_actuel.nom }} 
+                ({{ mandat_actuel.date_debut|date:"d M Y" }} - {{ mandat_actuel.date_fin|date:"d M Y" }})
+            </div>
+            {% else %}
+            <div class="alert alert-warning mb-0 flex-grow-1 me-3">
+                <i class="fas fa-calendar-times me-2"></i>
+                <strong>Aucun mandat actuel défini</strong>
+            </div>
+            {% endif %}
+            
+            <a href="{% url 'historique_fizato' %}" class="btn btn-outline-info">
+                <i class="fas fa-history me-2"></i>Voir l'historique
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Informations FIZATO -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Informations de l'organisation
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if info_fizato %}
+                    <div class="row">
+                        {% if info_fizato.logo %}
+                        <div class="col-md-3 mb-3">
+                            <img src="{{ info_fizato.logo.url }}" alt="Logo FIZATO" class="img-fluid rounded">
+                        </div>
+                        {% endif %}
+                        <div class="col-md-{% if info_fizato.logo %}9{% else %}12{% endif %}">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Nom :</strong></td>
+                                    <td>{{ info_fizato.nom }}</td>
+                                </tr>
+                                {% if info_fizato.nom_complet %}
+                                <tr>
+                                    <td><strong>Nom complet :</strong></td>
+                                    <td>{{ info_fizato.nom_complet }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <td><strong>Date de création :</strong></td>
+                                    <td>{{ info_fizato.date_creation|date:"d F Y" }}</td>
+                                </tr>
+                                {% if info_fizato.devise %}
+                                <tr>
+                                    <td><strong>Devise :</strong></td>
+                                    <td><em>"{{ info_fizato.devise }}"</em></td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                    
+                    {% if info_fizato.fondateurs %}
+                    <div class="mt-3">
+                        <h6><i class="fas fa-users me-2"></i>Fondateurs</h6>
+                        <p class="text-muted">{{ info_fizato.fondateurs }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if info_fizato.description %}
+                    <div class="mt-3">
+                        <h6><i class="fas fa-file-text me-2"></i>Description</h6>
+                        <p>{{ info_fizato.description|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                        <h5>Aucune information disponible</h5>
+                        <p class="text-muted">Les informations de FIZATO n'ont pas encore été configurées.</p>
+                        {% if user.is_staff or user.is_superuser %}
+                        <a href="{% url 'ajouter_info_fizato' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Ajouter les informations
+                        </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Bureau actuel -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-tie me-2"></i>Bureau actuel
+                </h5>
+                {% if user.is_staff or user.is_superuser %}
+                <a href="{% url 'ajouter_membre_bureau' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-plus me-1"></i>Ajouter
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if membres_bureau %}
+                    <!-- Organigramme hiérarchique stylisé -->
+                    <div class="organigramme">
+                        {% regroup membres_bureau by fonction.niveau_hierarchique as bureau_by_level %}
+                        
+                        {% for level in bureau_by_level %}
+                            <div class="niveau-hierarchy mb-4">
+                                {% for membre_bureau in level.list %}
+                                    {% if membre_bureau.fonction.nom == 'Président' %}
+                                        <!-- Président : En haut, centré, style spécial -->
+                                        <div class="text-center president-container mb-4">
+                                            <div class="president-box d-inline-block position-relative">
+                                                <div class="membre-card president-card p-3">
+                                                    <a href="{% url 'detail_membre_bureau' membre_bureau.id %}" class="text-decoration-none">
+                                                        <div class="photo-container mb-2">
+                                                            {% if membre_bureau.membre.photo %}
+                                                                <img src="{{ membre_bureau.membre.photo.url }}" alt="Photo {{ membre_bureau.membre.prenom }}" 
+                                                                     class="photo-president rounded-circle border border-warning shadow">
+                                                            {% else %}
+                                                                <div class="photo-placeholder-president rounded-circle border border-warning shadow d-flex align-items-center justify-content-center">
+                                                                    <i class="fas fa-user fa-2x text-warning"></i>
+                                                                </div>
+                                                            {% endif %}
+                                                            <div class="crown-icon">
+                                                                <i class="fas fa-crown text-warning"></i>
+                                                            </div>
+                                                        </div>
+                                                        <h6 class="nom-membre fw-bold mb-1 text-dark">{{ membre_bureau.membre.prenom }} {{ membre_bureau.membre.nom }}</h6>
+                                                        <p class="fonction-membre text-warning fw-bold mb-1">{{ membre_bureau.fonction.nom }}</p>
+                                                        <small class="association-membre text-muted">{{ membre_bureau.membre.association.nom }}</small>
+                                                    </a>
+                                                    
+                                                    {% if user.is_staff or user.is_superuser %}
+                                                    <div class="position-absolute top-0 end-0 mt-1 me-1">
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                                                <i class="fas fa-ellipsis-v"></i>
+                                                            </button>
+                                                            <ul class="dropdown-menu">
+                                                                <li><a class="dropdown-item text-danger" href="{% url 'supprimer_membre_bureau' membre_bureau.id %}">
+                                                                    <i class="fas fa-trash me-2"></i>Retirer
+                                                                </a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <!-- Ligne de connexion vers le bas -->
+                                                <div class="connection-line-down"></div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                <!-- Autres fonctions : Affichage en arbre sous le président -->
+                                {% if level.list.0.fonction.nom != 'Président' %}
+                                    <div class="niveau-sous-president">
+                                        <!-- Titre du niveau -->
+                                        <div class="titre-niveau text-center mb-3">
+                                            <h6 class="text-primary fw-bold border-bottom border-primary d-inline-block pb-1">
+                                                {{ level.list.0.fonction.nom }}{% if level.list|length > 1 %}s{% endif %}
+                                                <span class="badge bg-primary ms-2">{{ level.list|length }}</span>
+                                            </h6>
+                                        </div>
+                                        
+                                        <!-- Membres de ce niveau -->
+                                        <div class="row justify-content-center">
+                                            {% for membre_bureau in level.list %}
+                                            <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                                                <div class="membre-card standard-card position-relative">
+                                                    <a href="{% url 'detail_membre_bureau' membre_bureau.id %}" class="text-decoration-none">
+                                                        <div class="text-center p-3">
+                                                            <div class="photo-container mb-2">
+                                                                {% if membre_bureau.membre.photo %}
+                                                                    <img src="{{ membre_bureau.membre.photo.url }}" alt="Photo {{ membre_bureau.membre.prenom }}" 
+                                                                         class="photo-standard rounded-circle border border-primary shadow-sm">
+                                                                {% else %}
+                                                                    <div class="photo-placeholder-standard rounded-circle border border-primary shadow-sm d-flex align-items-center justify-content-center">
+                                                                        <i class="fas fa-user fa-lg text-primary"></i>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                            <h6 class="nom-membre fw-bold mb-1 text-dark">{{ membre_bureau.membre.prenom }} {{ membre_bureau.membre.nom }}</h6>
+                                                            <p class="fonction-membre text-primary fw-bold mb-1 small">{{ membre_bureau.fonction.nom }}</p>
+                                                            <small class="association-membre text-muted">{{ membre_bureau.membre.association.nom }}</small>
+                                                        </div>
+                                                    </a>
+                                                    
+                                                    {% if user.is_staff or user.is_superuser %}
+                                                    <div class="position-absolute top-0 end-0 mt-1 me-1">
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                                                <i class="fas fa-ellipsis-v"></i>
+                                                            </button>
+                                                            <ul class="dropdown-menu">
+                                                                <li><a class="dropdown-item text-danger" href="{% url 'supprimer_membre_bureau' membre_bureau.id %}">
+                                                                    <i class="fas fa-trash me-2"></i>Retirer
+                                                                </a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Styles CSS pour l'organigramme -->
+                    <style>
+                        .organigramme {
+                            min-height: 300px;
+                        }
+                        
+                        .president-card {
+                            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+                            border: 2px solid #f1c40f;
+                            border-radius: 15px;
+                            box-shadow: 0 8px 25px rgba(241, 196, 15, 0.3);
+                            transition: all 0.3s ease;
+                            min-width: 200px;
+                        }
+                        
+                        .president-card:hover {
+                            transform: translateY(-5px);
+                            box-shadow: 0 12px 35px rgba(241, 196, 15, 0.4);
+                        }
+                        
+                        .standard-card {
+                            background: white;
+                            border: 2px solid #3498db;
+                            border-radius: 12px;
+                            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+                            transition: all 0.3s ease;
+                        }
+                        
+                        .standard-card:hover {
+                            transform: translateY(-3px);
+                            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+                            border-color: #2980b9;
+                        }
+                        
+                        .photo-president {
+                            width: 80px;
+                            height: 80px;
+                            object-fit: cover;
+                            transition: transform 0.3s ease;
+                        }
+                        
+                        .photo-placeholder-president {
+                            width: 80px;
+                            height: 80px;
+                            background: rgba(241, 196, 15, 0.1);
+                        }
+                        
+                        .photo-standard {
+                            width: 60px;
+                            height: 60px;
+                            object-fit: cover;
+                            transition: transform 0.3s ease;
+                        }
+                        
+                        .photo-placeholder-standard {
+                            width: 60px;
+                            height: 60px;
+                            background: rgba(52, 152, 219, 0.1);
+                        }
+                        
+                        .membre-card a:hover .photo-president,
+                        .membre-card a:hover .photo-standard {
+                            transform: scale(1.1);
+                        }
+                        
+                        .crown-icon {
+                            position: absolute;
+                            top: -5px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            background: white;
+                            border-radius: 50%;
+                            width: 25px;
+                            height: 25px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                        }
+                        
+                        .connection-line-down {
+                            position: absolute;
+                            bottom: -20px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 2px;
+                            height: 20px;
+                            background: #3498db;
+                        }
+                        
+                        .connection-line-down::after {
+                            content: '';
+                            position: absolute;
+                            bottom: -5px;
+                            left: -3px;
+                            width: 8px;
+                            height: 8px;
+                            background: #3498db;
+                            border-radius: 50%;
+                        }
+                        
+                        .titre-niveau {
+                            position: relative;
+                        }
+                        
+                        .titre-niveau::before {
+                            content: '';
+                            position: absolute;
+                            top: -20px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 100px;
+                            height: 2px;
+                            background: #3498db;
+                        }
+                    </style>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-tie fa-3x text-muted mb-3"></i>
+                        <h5>Aucun membre du bureau</h5>
+                        <p class="text-muted">Aucun membre n'a encore été assigné au bureau.</p>
+                        {% if user.is_staff or user.is_superuser %}
+                        <a href="{% url 'ajouter_membre_bureau' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Ajouter un membre
+                        </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques et Organigramme -->
+    <div class="col-lg-4">
+        <!-- Statistiques -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Statistiques
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="border-end">
+                            <h3 class="text-primary mb-1">{{ total_associations }}</h3>
+                            <small class="text-muted">Associations</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border-end">
+                            <h3 class="text-success mb-1">{{ total_membres }}</h3>
+                            <small class="text-muted">Membres</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <h3 class="text-info mb-1">{{ total_cartes }}</h3>
+                        <small class="text-muted">Cartes</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Organigramme -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-sitemap me-2"></i>Organigramme
+                </h5>
+                {% if user.is_staff or user.is_superuser %}
+                <a href="{% url 'ajouter_fonction_bureau' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-plus me-1"></i>Fonction
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if fonctions %}
+                    {% for fonction in fonctions %}
+                    <div class="d-flex align-items-center mb-2 p-2 border rounded">
+                        <div class="me-2">
+                            <span class="badge bg-primary">{{ fonction.niveau_hierarchique }}</span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <strong>{{ fonction.nom }}</strong>
+                            {% if fonction.description %}
+                            <br><small class="text-muted">{{ fonction.description|truncatechars:50 }}</small>
+                            {% endif %}
+                        </div>
+                        {% if user.is_staff or user.is_superuser %}
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'modifier_fonction_bureau' fonction.id %}" class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'supprimer_fonction_bureau' fonction.id %}" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-sitemap fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">Aucune fonction définie</p>
+                        {% if user.is_staff or user.is_superuser %}
+                        <a href="{% url 'ajouter_fonction_bureau' %}" class="btn btn-sm btn-primary mt-2">
+                            <i class="fas fa-plus me-1"></i>Ajouter
+                        </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Comité des doyens -->
+        {% if comite_doyen %}
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-graduate me-2"></i>Comité des doyens
+                </h5>
+                {% if user.is_staff or user.is_superuser %}
+                <a href="{% url 'ajouter_comite_doyen' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-plus me-1"></i>Ajouter
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for doyen in comite_doyen %}
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center p-3 border rounded position-relative">
+                            <div class="me-3">
+                                {% if doyen.membre.photo %}
+                                    <img src="{{ doyen.membre.photo.url }}" alt="Photo {{ doyen.membre.prenom }}" 
+                                         class="rounded-circle border border-info" 
+                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                    <i class="fas fa-user-graduate fa-2x text-info"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ doyen.membre.prenom }} {{ doyen.membre.nom }}</h6>
+                                <p class="mb-1 text-info fw-bold small">{{ doyen.titre }}</p>
+                                <small class="text-muted">{{ doyen.membre.association.nom }}</small>
+                            </div>
+                            {% if user.is_staff or user.is_superuser %}
+                            <div class="position-absolute top-0 end-0 mt-2 me-2">
+                                <a href="{% url 'supprimer_comite_doyen' doyen.id %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% elif user.is_staff or user.is_superuser %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-graduate me-2"></i>Comité des doyens
+                </h5>
+            </div>
+            <div class="card-body text-center py-4">
+                <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
+                <h6>Aucun membre du comité</h6>
+                <p class="text-muted">Le comité des doyens n'a pas encore été constitué.</p>
+                <a href="{% url 'ajouter_comite_doyen' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Ajouter un membre
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

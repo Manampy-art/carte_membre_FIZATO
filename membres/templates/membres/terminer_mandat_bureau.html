@@ -1,0 +1,189 @@
+{% extends "membres/base.html" %}
+
+{% block title %}Terminer le mandat du bureau actuel - FIZATO{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-archive me-2"></i>Terminer le mandat du bureau actuel
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Attention !</strong> Cette action va :
+                        <ul class="mt-2 mb-0">
+                            <li>Terminer le mandat actuel : <strong>{{ mandat_actuel.nom }}</strong></li>
+                            <li>Archiver tous les membres du bureau actuel</li>
+                            <li>Archiver tous les membres du comité des doyens</li>
+                            <li>Déplacer l'organigramme complet vers l'historique</li>
+                        </ul>
+                    </div>
+
+                    <!-- Aperçu de ce qui sera archivé -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-user-tie me-2"></i>Bureau à archiver ({{ membres_bureau|length }} membres)</h6>
+                            <div class="list-group list-group-flush">
+                                {% for membre_bureau in membres_bureau %}
+                                <div class="list-group-item py-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if membre_bureau.membre.photo %}
+                                            <img src="{{ membre_bureau.membre.photo.url }}" alt="Photo" 
+                                                 class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" 
+                                                 style="width: 30px; height: 30px;">
+                                                <i class="fas fa-user text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <strong>{{ membre_bureau.membre.prenom }} {{ membre_bureau.membre.nom }}</strong>
+                                            <br><small class="text-muted">{{ membre_bureau.fonction.nom }} - {{ membre_bureau.membre.association.nom }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-user-graduate me-2"></i>Comité des doyens à archiver ({{ comite_doyen|length }} membres)</h6>
+                            {% if comite_doyen %}
+                            <div class="list-group list-group-flush">
+                                {% for doyen in comite_doyen %}
+                                <div class="list-group-item py-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if doyen.membre.photo %}
+                                            <img src="{{ doyen.membre.photo.url }}" alt="Photo" 
+                                                 class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" 
+                                                 style="width: 30px; height: 30px;">
+                                                <i class="fas fa-user text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <strong>{{ doyen.membre.prenom }} {{ doyen.membre.nom }}</strong>
+                                            <br><small class="text-muted">{{ doyen.titre }} - {{ doyen.membre.association.nom }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted">Aucun membre du comité des doyens</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Formulaire -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.date_fin.id_for_label }}" class="form-label">
+                                        <i class="fas fa-calendar me-2"></i>{{ form.date_fin.label }}
+                                    </label>
+                                    {{ form.date_fin }}
+                                    {% if form.date_fin.help_text %}
+                                        <div class="form-text">{{ form.date_fin.help_text }}</div>
+                                    {% endif %}
+                                    {% if form.date_fin.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.date_fin.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.motif_fin.id_for_label }}" class="form-label">
+                                        <i class="fas fa-comment me-2"></i>{{ form.motif_fin.label }}
+                                    </label>
+                                    {{ form.motif_fin }}
+                                    {% if form.motif_fin.help_text %}
+                                        <div class="form-text">{{ form.motif_fin.help_text }}</div>
+                                    {% endif %}
+                                    {% if form.motif_fin.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.motif_fin.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if form.description %}
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <i class="fas fa-file-text me-2"></i>{{ form.description.label }}
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.help_text %}
+                                <div class="form-text">{{ form.description.help_text }}</div>
+                            {% endif %}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Boutons d'action -->
+                        <div class="d-flex justify-content-between pt-3 border-top">
+                            <a href="{% url 'detail_fizato' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-archive me-2"></i>Enregistrer et archiver
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus sur le premier champ
+    const firstInput = document.querySelector('input, textarea');
+    if (firstInput) {
+        firstInput.focus();
+    }
+    
+    // Validation du formulaire
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const dateFin = document.querySelector('#{{ form.date_fin.id_for_label }}');
+        if (!dateFin.value) {
+            e.preventDefault();
+            alert('Veuillez sélectionner une date de fin.');
+            dateFin.focus();
+            return;
+        }
+        
+        // Confirmation avant soumission
+        if (!confirm('Êtes-vous sûr de vouloir terminer ce mandat et archiver le bureau actuel ?')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

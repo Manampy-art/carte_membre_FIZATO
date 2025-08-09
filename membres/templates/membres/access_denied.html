@@ -1,0 +1,89 @@
+{% extends "membres/base.html" %}
+
+{% block title %}Accès refusé - FIZATO{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card text-center">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-ban fa-4x text-danger"></i>
+                    </div>
+                    
+                    <h2 class="card-title text-danger mb-3">{{ message|default:"Accès refusé" }}</h2>
+                    
+                    <p class="card-text text-muted mb-4">
+                        {{ detail|default:"Vous n'avez pas les permissions nécessaires pour accéder à cette page." }}
+                    </p>
+                    
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Information :</strong> 
+                        {% if user.is_authenticated %}
+                            Vous êtes connecté en tant que <strong>{{ user.get_full_name|default:user.username }}</strong>.
+                            Pour obtenir des permissions supplémentaires, contactez un administrateur.
+                        {% else %}
+                            Vous devez vous connecter pour accéder à cette fonctionnalité.
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <a href="{% url 'dashboard' %}" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>Retour au tableau de bord
+                        </a>
+                        
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-user me-2"></i>Mon profil
+                            </a>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informations sur les rôles -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users-cog me-2"></i>Système de permissions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-success">
+                                <i class="fas fa-user-shield me-2"></i>Administrateurs
+                            </h6>
+                            <ul class="list-unstyled text-muted">
+                                <li><i class="fas fa-check me-2 text-success"></i>Ajouter des associations</li>
+                                <li><i class="fas fa-check me-2 text-success"></i>Ajouter des membres</li>
+                                <li><i class="fas fa-check me-2 text-success"></i>Modifier tous les membres</li>
+                                <li><i class="fas fa-check me-2 text-success"></i>Supprimer des données</li>
+                                <li><i class="fas fa-check me-2 text-success"></i>Générer les cartes</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">
+                                <i class="fas fa-user me-2"></i>Membres
+                            </h6>
+                            <ul class="list-unstyled text-muted">
+                                <li><i class="fas fa-eye me-2 text-primary"></i>Consulter le tableau de bord</li>
+                                <li><i class="fas fa-eye me-2 text-primary"></i>Voir son profil</li>
+                                <li><i class="fas fa-eye me-2 text-primary"></i>Voir ses informations</li>
+                                <li><i class="fas fa-times me-2 text-danger"></i>Modification limitée</li>
+                                <li><i class="fas fa-times me-2 text-danger"></i>Pas d'ajout de données</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,235 @@
+{% extends 'membres/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-plus-circle me-2"></i>Générer des Cartes</h2>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="mb-4">
+            <h5>Sélectionnez les membres FI.ZA.TO pour générer leurs cartes :</h5>
+            <p class="text-muted">Vous pouvez sélectionner jusqu'à 20 membres par page d'impression (format 4×5)</p>
+        </div>
+
+        <form method="post" id="carteForm">
+            {% csrf_token %}
+            
+            <!-- Filtre par association -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label for="associationFilter" class="form-label">Filtrer par association :</label>
+                    <select id="associationFilter" class="form-select">
+                        <option value="">Toutes les associations</option>
+                        {% for association in associations %}
+                            <option value="{{ association.id }}">{{ association.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Actions :</label>
+                    <div>
+                        <button type="button" id="selectAll" class="btn btn-outline-primary btn-sm me-2">
+                            <i class="fas fa-check-double me-1"></i>Tout sélectionner
+                        </button>
+                        <button type="button" id="selectNone" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-times me-1"></i>Tout désélectionner
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compteur de sélection -->
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <span id="selectionCount">0</span> membre(s) sélectionné(s) sur <span id="maxCount">20</span> maximum par page
+            </div>
+
+            <!-- Liste des membres -->
+            <div class="row" id="membresContainer">
+                {% for membre in membres %}
+                    <div class="col-md-6 col-lg-4 mb-3 membre-item" data-association="{{ membre.association.id }}">
+                        <div class="card h-100">
+                            <div class="card-body p-3">
+                                <div class="form-check">
+                                    <input class="form-check-input membre-checkbox" type="checkbox" 
+                                           name="membres" value="{{ membre.id }}" id="membre_{{ membre.id }}">
+                                    <label class="form-check-label w-100" for="membre_{{ membre.id }}">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0 me-3">
+                                                {% if membre.photo %}
+                                                    <img src="{{ membre.photo.url }}" alt="Photo" 
+                                                         class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                                {% else %}
+                                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" 
+                                                         style="width: 40px; height: 40px;">
+                                                        <i class="fas fa-user text-white"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1 fw-bold">{{ membre.prenom }} {{ membre.nom }}</h6>
+                                                <small class="text-primary">{{ membre.association.nom }}</small><br>
+                                                <small class="text-muted">{{ membre.filiere }} - {{ membre.parcours }}</small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5>Aucun membre disponible</h5>
+                            <p class="text-muted">Tous les membres ont déjà une carte générée ou aucun membre n'est enregistré.</p>
+                            <a href="{% url 'ajouter_membre' %}" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>Ajouter un Membre
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Bouton de génération -->
+            {% if membres %}
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-success btn-lg" id="generateBtn" disabled>
+                        <i class="fas fa-id-card me-2"></i>Générer les Cartes Sélectionnées
+                    </button>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.membre-checkbox');
+    const selectAllBtn = document.getElementById('selectAll');
+    const selectNoneBtn = document.getElementById('selectNone');
+    const generateBtn = document.getElementById('generateBtn');
+    const selectionCount = document.getElementById('selectionCount');
+    const associationFilter = document.getElementById('associationFilter');
+    const membresContainer = document.getElementById('membresContainer');
+    const maxCount = 20;
+
+    // Fonction pour mettre à jour le compteur et l'état du bouton
+    function updateUI() {
+        const checked = document.querySelectorAll('.membre-checkbox:checked').length;
+        selectionCount.textContent = checked;
+        
+        if (generateBtn) {
+            generateBtn.disabled = checked === 0;
+            
+            if (checked > maxCount) {
+                generateBtn.disabled = true;
+                generateBtn.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>Trop de sélections (max ${maxCount})`;
+                generateBtn.className = 'btn btn-warning btn-lg';
+            } else if (checked > 0) {
+                generateBtn.innerHTML = '<i class="fas fa-id-card me-2"></i>Générer les Cartes Sélectionnées';
+                generateBtn.className = 'btn btn-success btn-lg';
+            } else {
+                generateBtn.innerHTML = '<i class="fas fa-id-card me-2"></i>Générer les Cartes Sélectionnées';
+                generateBtn.className = 'btn btn-success btn-lg';
+            }
+        }
+    }
+
+    // Fonction pour filtrer les membres par association
+    function filterMembers() {
+        const selectedAssociation = associationFilter.value;
+        const membreItems = document.querySelectorAll('.membre-item');
+        
+        membreItems.forEach(item => {
+            if (selectedAssociation === '' || item.dataset.association === selectedAssociation) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+                // Décocher les membres cachés
+                const checkbox = item.querySelector('.membre-checkbox');
+                if (checkbox && checkbox.checked) {
+                    checkbox.checked = false;
+                }
+            }
+        });
+        
+        updateUI();
+    }
+
+    // Événements
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const checked = document.querySelectorAll('.membre-checkbox:checked').length;
+            if (checked > maxCount) {
+                this.checked = false;
+                alert(`Vous ne pouvez sélectionner que ${maxCount} membres maximum par page d'impression.`);
+            }
+            updateUI();
+        });
+    });
+
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            const visibleCheckboxes = document.querySelectorAll('.membre-item:not([style*="display: none"]) .membre-checkbox');
+            let count = 0;
+            
+            visibleCheckboxes.forEach(checkbox => {
+                if (count < maxCount && !checkbox.checked) {
+                    checkbox.checked = true;
+                    count++;
+                }
+            });
+            
+            if (count === 0 && visibleCheckboxes.length > 0) {
+                alert(`Vous ne pouvez sélectionner que ${maxCount} membres maximum.`);
+            }
+            
+            updateUI();
+        });
+    }
+
+    if (selectNoneBtn) {
+        selectNoneBtn.addEventListener('click', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateUI();
+        });
+    }
+
+    if (associationFilter) {
+        associationFilter.addEventListener('change', filterMembers);
+    }
+
+    // Initialisation
+    updateUI();
+});
+</script>
+
+<style>
+.membre-item .card {
+    transition: all 0.2s ease;
+    border: 1px solid #dee2e6;
+}
+
+.membre-item .card:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.form-check-input:checked + .form-check-label .card {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.alert-info {
+    border-left: 4px solid #0dcaf0;
+}
+
+#generateBtn:disabled {
+    opacity: 0.6;
+}
+</style>
+{% endblock %}

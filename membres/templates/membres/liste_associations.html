@@ -1,0 +1,470 @@
+{% extends 'membres/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-users me-2"></i>Liste des Associations</h2>
+        <p class="text-muted mb-0">Gérer les associations et leurs informations</p>
+    </div>
+    <div class="d-flex gap-2">
+        <div class="input-group" style="width: 300px;">
+            <input type="text" class="form-control" placeholder="Rechercher une association..." id="searchInput">
+            <button class="btn btn-outline-secondary" type="button">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+        {% if is_admin %}
+        <a href="{% url 'ajouter_association' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nouvelle Association
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Statistiques rapides -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ associations.count }}</h4>
+                        <small>Association{{ associations.count|pluralize }}</small>
+                    </div>
+                    <i class="fas fa-users fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ total_membres }}</h4>
+                        <small>Membre{{ total_membres|pluralize }} total</small>
+                    </div>
+                    <i class="fas fa-user-friends fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-body">
+        {% if associations %}
+            <div class="row" id="associationsContainer">
+                {% for association in associations %}
+                <div class="col-lg-6 col-xl-4 mb-4 association-card" data-name="{{ association.nom|lower }}">
+                    <div class="card h-100 shadow-sm border-0 hover-lift">
+                        <div class="position-relative">
+                            <div class="card-header bg-gradient text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0 fw-bold">
+                                        <i class="fas fa-building me-2"></i>{{ association.nom }}
+                                    </h5>
+                                    {% if is_admin %}
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="{% url 'modifier_association' association.pk %}">
+                                                <i class="fas fa-edit me-2"></i>Modifier</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="{% url 'supprimer_association' association.pk %}">
+                                                <i class="fas fa-trash me-2"></i>Supprimer</a></li>
+                                        </ul>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="position-absolute top-0 end-0 p-2">
+                                    <span class="badge bg-light text-dark">{{ association.membres.count }} membre{{ association.membres.count|pluralize }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-4">
+                            <!-- Section Logos avec effet hover amélioré -->
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        {% if association.logo_association %}
+                                            <div class="logo-container position-relative mb-2">
+                                                <img src="{{ association.logo_association.url }}" 
+                                                     alt="Logo {{ association.nom }}" 
+                                                     class="img-fluid rounded-3 shadow-sm logo-hover" 
+                                                     style="max-height: 90px; max-width: 90px; object-fit: contain;">
+                                                <div class="logo-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center rounded-3">
+                                                    <i class="fas fa-eye text-white"></i>
+                                                </div>
+                                            </div>
+                                            <small class="text-success fw-bold">Logo Association</small>
+                                        {% else %}
+                                            <div class="bg-light rounded-3 d-flex align-items-center justify-content-center mb-2 logo-placeholder" 
+                                                 style="height: 90px; width: 90px; margin: 0 auto;">
+                                                <i class="fas fa-building fa-2x text-muted"></i>
+                                            </div>
+                                            <small class="text-muted">Pas de logo</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        {% if association.logo_universite %}
+                                            <div class="logo-container position-relative mb-2">
+                                                <img src="{{ association.logo_universite.url }}" 
+                                                     alt="Logo Université" 
+                                                     class="img-fluid rounded-3 shadow-sm logo-hover" 
+                                                     style="max-height: 90px; max-width: 90px; object-fit: contain;">
+                                                <div class="logo-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center rounded-3">
+                                                    <i class="fas fa-eye text-white"></i>
+                                                </div>
+                                            </div>
+                                            <small class="text-success fw-bold">Logo Université</small>
+                                        {% else %}
+                                            <div class="bg-light rounded-3 d-flex align-items-center justify-content-center mb-2 logo-placeholder" 
+                                                 style="height: 90px; width: 90px; margin: 0 auto;">
+                                                <i class="fas fa-university fa-2x text-muted"></i>
+                                            </div>
+                                            <small class="text-muted">Pas de logo</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Informations principales avec icônes colorées -->
+                            <div class="association-info">
+                                {% if association.devise %}
+                                <div class="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-quote-left text-primary me-2 mt-1"></i>
+                                        <div>
+                                            <small class="text-muted d-block">Devise</small>
+                                            <em class="text-primary fw-bold">"{{ association.devise }}"</em>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="row g-3 mb-3">
+                                    {% if association.date_creation %}
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center p-2 bg-light rounded">
+                                            <div class="flex-shrink-0">
+                                                <div class="bg-success rounded-circle p-2">
+                                                    <i class="fas fa-calendar-alt text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <small class="text-muted d-block">Création</small>
+                                                <strong class="text-dark">{{ association.date_creation|date:"d/m/Y" }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center p-2 bg-light rounded">
+                                            <div class="flex-shrink-0">
+                                                <div class="bg-info rounded-circle p-2">
+                                                    <i class="fas fa-users text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <small class="text-muted d-block">Membres</small>
+                                                <strong class="text-dark">{{ association.membres.count }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if association.fondateurs %}
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-crown text-warning me-2 mt-1"></i>
+                                        <div>
+                                            <small class="text-muted d-block">Fondateurs</small>
+                                            <span class="text-dark">{{ association.fondateurs|truncatewords:8 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if association.description %}
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-info-circle text-secondary me-2 mt-1"></i>
+                                        <div>
+                                            <small class="text-muted d-block">Description</small>
+                                            <p class="text-dark mb-0">{{ association.description|truncatewords:15 }}
+                                                {% if association.description|length > 100 %}
+                                                    <a href="#" class="text-primary text-decoration-none" data-bs-toggle="tooltip" title="{{ association.description }}">...voir plus</a>
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Footer avec actions et métadonnées -->
+                            <div class="border-top pt-3 mt-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex gap-2">
+                                        <span class="badge bg-primary-subtle text-primary">{{ association.membres.count }} membre{{ association.membres.count|pluralize }}</span>
+                                        <span class="badge bg-secondary-subtle text-secondary">
+                                            <i class="fas fa-clock me-1"></i>{{ association.created_at|timesince }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Boutons d'action avec design moderne -->
+                                <div class="d-flex gap-2 flex-wrap justify-content-center">
+                                    <a href="{% url 'detail_association' association.pk %}" 
+                                       class="btn btn-primary btn-sm flex-fill" style="max-width: 140px;">
+                                        <i class="fas fa-eye me-2"></i>Voir détails
+                                    </a>
+                                    {% if is_admin %}
+                                    <a href="{% url 'modifier_association' association.pk %}" 
+                                       class="btn btn-outline-primary btn-sm flex-fill" style="max-width: 120px;">
+                                        <i class="fas fa-edit me-2"></i>Modifier
+                                    </a>
+                                    <a href="{% url 'supprimer_association' association.pk %}" 
+                                       class="btn btn-outline-danger btn-sm flex-fill" style="max-width: 120px;">
+                                        <i class="fas fa-trash-alt me-2"></i>Supprimer
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-4x text-muted mb-4"></i>
+                <h4 class="text-muted">Aucune association</h4>
+                <p class="text-muted mb-4">Commencez par créer votre première association.</p>
+                <a href="{% url 'ajouter_association' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Créer une Association
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal pour voir l'image en grand -->
+<div class="modal fade" id="logoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoModalLabel">Logo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalLogo" src="" alt="Logo" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Effets hover et animations */
+    .hover-lift {
+        transition: all 0.3s ease;
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+    }
+    
+    .logo-container {
+        cursor: pointer;
+    }
+    
+    .logo-hover {
+        transition: all 0.3s ease;
+    }
+    
+    .logo-overlay {
+        background: rgba(0,0,0,0.7);
+        opacity: 0;
+        transition: all 0.3s ease;
+        border-radius: 0.75rem;
+    }
+    
+    .logo-container:hover .logo-overlay {
+        opacity: 1;
+    }
+    
+    .logo-container:hover .logo-hover {
+        transform: scale(1.05);
+    }
+    
+    .logo-placeholder {
+        transition: all 0.3s ease;
+        border: 2px dashed #dee2e6;
+    }
+    
+    .logo-placeholder:hover {
+        border-color: #6c757d;
+        background-color: #f8f9fa !important;
+    }
+    
+    .association-card {
+        transition: all 0.3s ease;
+    }
+    
+    .card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.1);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+    
+    .hover-lift:hover .card-header::before {
+        transform: translateX(100%);
+    }
+    
+    .btn {
+        transition: all 0.2s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    .association-info {
+        animation: fadeInUp 0.5s ease;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+        .hover-lift:hover {
+            transform: none;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fonction de recherche
+    const searchInput = document.getElementById('searchInput');
+    const associationCards = document.querySelectorAll('.association-card');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            
+            associationCards.forEach(card => {
+                const associationName = card.dataset.name;
+                const cardContent = card.textContent.toLowerCase();
+                
+                if (searchTerm === '' || associationName.includes(searchTerm) || cardContent.includes(searchTerm)) {
+                    card.style.display = '';
+                    card.classList.add('fade-in');
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Afficher un message si aucun résultat
+            const visibleCards = document.querySelectorAll('.association-card[style=""]').length;
+            let noResultsMsg = document.getElementById('noResultsMessage');
+            
+            if (visibleCards === 0 && searchTerm !== '') {
+                if (!noResultsMsg) {
+                    noResultsMsg = document.createElement('div');
+                    noResultsMsg.id = 'noResultsMessage';
+                    noResultsMsg.className = 'col-12 text-center py-5';
+                    noResultsMsg.innerHTML = `
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Aucune association trouvée</h5>
+                        <p class="text-muted">Essayez avec d'autres termes de recherche</p>
+                    `;
+                    document.getElementById('associationsContainer').appendChild(noResultsMsg);
+                }
+            } else if (noResultsMsg) {
+                noResultsMsg.remove();
+            }
+        });
+    }
+    
+    // Modal pour afficher les logos en grand
+    const logoImages = document.querySelectorAll('.logo-hover');
+    const logoModal = new bootstrap.Modal(document.getElementById('logoModal'));
+    const modalLogo = document.getElementById('modalLogo');
+    const modalTitle = document.getElementById('logoModalLabel');
+    
+    logoImages.forEach(img => {
+        img.closest('.logo-container').addEventListener('click', function() {
+            modalLogo.src = img.src;
+            modalLogo.alt = img.alt;
+            modalTitle.textContent = img.alt;
+            logoModal.show();
+        });
+    });
+    
+    // Tooltips pour les descriptions longues
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Animation d'entrée des cartes
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    associationCards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
+    
+    // Confirmation de suppression avec SweetAlert si disponible
+    const deleteLinks = document.querySelectorAll('a[href*="supprimer"]');
+    deleteLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const associationName = this.closest('.card').querySelector('h5').textContent.trim();
+            
+            if (confirm(`Êtes-vous sûr de vouloir supprimer l'association "${associationName}" ?\n\nCette action est irréversible et supprimera également tous les membres associés.`)) {
+                window.location.href = this.href;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

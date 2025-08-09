@@ -1,0 +1,76 @@
+{% extends "membres/base.html" %}
+
+{% block title %}Confirmer la suppression - Bureau FIZATO{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-exclamation-triangle text-warning me-2"></i>Confirmer la suppression</h2>
+        <p class="text-muted mb-0">Retirer un membre du bureau de FIZATO</p>
+    </div>
+    <a href="{% url 'detail_fizato' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmation requise
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    {% if membre_bureau.membre.photo %}
+                        <img src="{{ membre_bureau.membre.photo.url }}" alt="Photo {{ membre_bureau.membre.prenom }}" 
+                             class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                    {% else %}
+                        <i class="fas fa-user-circle fa-4x text-muted mb-3"></i>
+                    {% endif %}
+                    
+                    <h4>{{ membre_bureau.membre.prenom }} {{ membre_bureau.membre.nom }}</h4>
+                    <p class="text-primary fw-bold">{{ membre_bureau.fonction.nom }}</p>
+                    <p class="text-muted">{{ membre_bureau.membre.association.nom }}</p>
+                </div>
+                
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Êtes-vous sûr de vouloir retirer <strong>{{ membre_bureau.membre.prenom }} {{ membre_bureau.membre.nom }}</strong> 
+                    de la fonction <strong>{{ membre_bureau.fonction.nom }}</strong> ?
+                </div>
+                
+                <div class="row text-center mb-3">
+                    <div class="col-6">
+                        <small class="text-muted">Date de début</small>
+                        <div class="fw-bold">{{ membre_bureau.date_debut|date:"d/m/Y" }}</div>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">Statut</small>
+                        <div>
+                            {% if membre_bureau.est_actuel %}
+                                <span class="badge bg-success">Actuel</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Terminé</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post" class="text-center">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'detail_fizato' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Annuler
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Confirmer la suppression
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

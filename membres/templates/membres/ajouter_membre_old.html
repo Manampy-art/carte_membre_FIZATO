@@ -1,0 +1,109 @@
+{% extends 'membres/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-plus me-2"></i>Ajouter un Membre</h2>
+    <a href="{% url 'liste_membres' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Note :</strong> Pour utiliser les formulaires complets, nous devrons implémenter la logique des formulaires Django.
+            Pour l'instant, voici l'interface prête.
+        </div>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Association</label>
+                        <select class="form-control" name="association" required>
+                            <option value="">Sélectionnez une association</option>
+                            <!-- Les options seront ajoutées dynamiquement -->
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Photo du membre</label>
+                        <input type="file" class="form-control" name="photo" accept="image/*">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Nom du membre *</label>
+                        <input type="text" class="form-control" name="nom" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Prénom du membre *</label>
+                        <input type="text" class="form-control" name="prenom" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">N° CIN *</label>
+                        <input type="text" class="form-control" name="numero_cin" 
+                               placeholder="Exemple: AB123456" required>
+                        <div class="form-text">Format: 1-2 lettres suivies de 6-8 chiffres</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Du *</label>
+                        <input type="date" class="form-control" name="date_debut" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">À *</label>
+                        <input type="date" class="form-control" name="date_fin" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Filière *</label>
+                        <input type="text" class="form-control" name="filiere" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Parcours *</label>
+                        <input type="text" class="form-control" name="parcours" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">N°C (Numéro de Carte) *</label>
+                <input type="text" class="form-control" name="numero_carte" required>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'liste_membres' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
